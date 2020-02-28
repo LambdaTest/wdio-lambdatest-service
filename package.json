@@ -1,0 +1,118 @@
+{
+  "name": "wdio-lambdatest-service",
+  "version": "1.0.0",
+  "description": "A WebdriverIO service that manages tunnel and job metadata for LambdaTest.",
+  "author": "LambdaTest <keys@lambdatest.com>",
+  "contributors": [
+    "LambdaTest <keys@lambdatest.com> (https://www.npmjs.com/~lambdatestdev)"
+  ],
+  "homepage": "https://github.com/LambdaTest/wdio-lambdatest-service",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LambdaTest/wdio-lambdatest-service.git"
+  },
+  "license": "MIT",
+  "main": "./build/index",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "run-s clean compile",
+    "clean": "rimraf ./build",
+    "compile": "babel src/ -d build/ --config-file ./babel.config.js",
+    "test": "run-s test:*",
+    "test:eslint": "eslint --cache src tests",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "webdriver",
+    "wdio",
+    "wdio-service",
+    "lambdatest"
+  ],
+  "bugs": {
+    "url": "https://github.com/LambdaTest/wdio-lambdatest-service/issues"
+  },
+  "dependencies": {
+    "@wdio/logger": "6.0.0-alpha.0",
+    "@lambdatest/node-tunnel": "*",
+    "@lambdatest/node-rest-client": "*"
+  },
+  "peerDependencies": {
+    "@wdio/cli": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.2",
+    "@babel/core": "^7.6.2",
+    "@babel/node": "^7.6.2",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-function-bind": "^7.2.0",
+    "@babel/plugin-proposal-optional-catch-binding": "^7.2.0",
+    "@babel/plugin-syntax-export-default-from": "^7.2.0",
+    "@babel/preset-env": "^7.6.2",
+    "@babel/register": "^7.6.2",
+    "@octokit/rest": "^16.35.2",
+    "@types/jest": "^24.0.18",
+    "aws-sdk": "^2.539.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^10.0.3",
+    "babel-jest": "^24.9.0",
+    "babel-plugin-source-map-support": "^2.1.1",
+    "cheerio": "^1.0.0-rc.3",
+    "codecov": "^3.6.1",
+    "copyfiles": "^2.1.1",
+    "cucumber": "^5.1.0",
+    "del": "^5.1.0",
+    "dox": "^0.9.0",
+    "eslint": "^6.5.1",
+    "eslint-plugin-import": "^2.18.2",
+    "husky": "^3.0.7",
+    "inquirer": "^7.0.0",
+    "jest": "^24.9.0",
+    "lerna": "^3.16.4",
+    "lerna-changelog": "^1.0.0",
+    "markdox": "^0.1.10",
+    "mime-types": "^2.1.24",
+    "np": "^5.1.0",
+    "npm-run-all": "^4.1.5",
+    "recursive-readdir": "^2.2.2",
+    "rimraf": "^3.0.0",
+    "shelljs": "^0.8.3",
+    "source-map-support": "^0.5.13",
+    "tempy": "^0.3.0",
+    "typescript": "^3.6.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "git diff-index --name-only --diff-filter=d HEAD | grep -E \"(.*)\\.js$\" | xargs node_modules/eslint/bin/eslint.js -c .eslintrc.js",
+      "pre-push": "npm run test:eslint"
+    }
+  },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/tests/*.test.js"
+    ],
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "node_modules/"
+    ]
+  },
+  "greenkeeper": {
+    "lockfiles": {
+      "outOfRangeUpdatesOnly": true
+    }
+  }
+}

@@ -1,0 +1,6 @@
+src
+coverage
+node_modules
+tests
+*.log
+.eslintcache
