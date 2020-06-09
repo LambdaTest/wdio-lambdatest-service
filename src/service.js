@@ -52,8 +52,9 @@ export default class LambdaRestService {
         }
     }
 
-    afterTest(test) {
-        if (!test.passed) {
+    /*eslint no-unused-vars: ["error", { "args": "none" }]*/
+    afterTest(test, context, { error, result, duration, passed, retries }) {
+        if (!passed) {
             ++this.failures
         }
     }
