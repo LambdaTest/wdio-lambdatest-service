@@ -11,7 +11,7 @@ The easiest way is to keep `wdio-lambdatest-service` as a devDependency in your 
 ```json
 {
     "devDependencies": {
-        "wdio-lambdatest-service": "^1.0.0"
+        "wdio-lambdatest-service": "^1.0.1"
     }
 }
 ```
@@ -35,6 +35,7 @@ export.config = {
     // ...
     user: process.env.LT_USERNAME,
     key: process.env.LT_ACCESS_KEY,
+    logFile : './logDir/api.log',
     services: [
         ['lambdatest', {
             tunnel: true
