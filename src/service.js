@@ -146,17 +146,19 @@ export default class LambdaRestService {
     /* istanbul ignore next */
     getBody(failures, calledOnReload = false, browserName) {
         let body = {}
-        body.name = this.suiteTitle
-        if (browserName) {
-            body.name = `${browserName}: ${body.name}`
-        }
-        if (calledOnReload || this.testCnt) {
-            let testCnt = ++this.testCnt
-            if (global.browser.isMultiremote) {
-                testCnt = Math.ceil(testCnt / global.browser.instances.length)
+        if (!(!global.browser.isMultiremote && this.capabilities.name || global.browser.isMultiremote && this.capabilities[browserName].capabilities.name)) {
+            body.name = this.suiteTitle
+            if (browserName) {
+                body.name = `${browserName}: ${body.name}`
             }
+            if (calledOnReload || this.testCnt) {
+                let testCnt = ++this.testCnt
+                if (global.browser.isMultiremote) {
+                    testCnt = Math.ceil(testCnt / global.browser.instances.length)
+                }
 
-            body.name += ` (${testCnt})`
+                body.name += ` (${testCnt})`
+            }
         }
         body.status_ind = failures > 0 ? 'failed' : 'passed'
         return body
