@@ -37,10 +37,10 @@
     "@lambdatest/node-rest-client": "*",
     "@lambdatest/node-tunnel": "*",
     "@wdio/logger": "6.0.0-alpha.0",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.19"
   },
   "peerDependencies": {
-    "@wdio/cli": "^5.0.0"
+    "@wdio/cli": "*"
   },
   "publishConfig": {
     "access": "public"
