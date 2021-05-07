@@ -61,6 +61,13 @@ Specified optional will be passed down to LambdaTest Tunnel. See [this list](htt
 Type: `Object`<br>
 Default: `{}`
 
+## Steps to compile and publish
+1. git clone this repository.
+2. run "npm install"
+3. run "npm run compile"
+4. Steps to Publish: run "npm login"
+5. run "npm publish --access public"
+
 ----
 
 For more information on WebdriverIO see the [homepage](https://webdriver.io).
