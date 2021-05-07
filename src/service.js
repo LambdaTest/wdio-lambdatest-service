@@ -1,7 +1,7 @@
-import LambdaRestClient from '@lambdatest/node-rest-client';
-import logger from '@wdio/logger';
+import LambdaRestClient from '@lambdatest/node-rest-client'
+import logger from '@wdio/logger'
 
-const log = logger('@wdio/lambdatest-service');
+const log = logger('@wdio/lambdatest-service')
 
 export default class LambdaRestService {
   constructor() {
