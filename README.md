@@ -65,9 +65,8 @@ Default: `{}`
 1. git clone this repository.
 2. run "npm install"
 3. run "npm run compile"
-4. Steps to Publish 
-→ npm login
-→ npm publish --access public
+4. Steps to Publish: run "npm login"
+5. run "npm publish --access public"
 
 ----
 
