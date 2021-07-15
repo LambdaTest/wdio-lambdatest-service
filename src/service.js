@@ -62,8 +62,8 @@ export default class LambdaRestService {
     }
   }
 
-  afterScenario(uri, feature, pickle, result) {
-    if (result.status === 'failed') {
+  afterScenario(world, { passed, error, duration }) {
+    if (!passed) {
       ++this.failures;
     }
   }
