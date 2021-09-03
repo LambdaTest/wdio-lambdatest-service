@@ -24,11 +24,16 @@ export default class LambdaTestLauncher {
 
         if (Array.isArray(capabilities)) {
             capabilities.forEach(capability => {
-                capability['LT:Options'] = {}
-                capability['LT:Options'].tunnel = true
+                if(capability['LT:Options']===undefined)
+                    capability.tunnel = true
+                else
+                    capability['LT:Options'].tunnel = true
             })
         } else if (typeof capabilities === 'object') {
-            capabilities['LT:Options'].tunnel = true
+            if(capabilities['LT:Options']===undefined)
+                capabilities.tunnel = true
+            else
+                capabilities['LT:Options'].tunnel = true
         }
         // measure LT boot time
         const obs = new PerformanceObserver(list => {
@@ -49,10 +54,16 @@ export default class LambdaTestLauncher {
                     this.lambdatestTunnelProcess.getTunnelName(tunnelName => {
                         if (Array.isArray(capabilities)) {
                             capabilities.forEach(capability => {
-                                capability['LT:Options'].tunnelName = tunnelName
+                                if(capability['LT:Options']===undefined)
+                                    capability.tunnelName = tunnelName
+                                else
+                                    capability['LT:Options'].tunnelName = tunnelName
                             })
                         } else if (typeof capabilities === 'object') {
-                            capabilities['LT:Options'].tunnelName = tunnelName
+                            if(capabilities['LT:Options']===undefined)
+                                capabilities.tunnelName = tunnelName
+                            else
+                                capabilities['LT:Options'].tunnelName = tunnelName
                         }
                         resolve()
                     })
