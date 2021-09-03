@@ -24,6 +24,7 @@ export default class LambdaTestLauncher {
 
         if (Array.isArray(capabilities)) {
             capabilities.forEach(capability => {
+                capability['LT:Options'] = {}
                 capability['LT:Options'].tunnel = true
             })
         } else if (typeof capabilities === 'object') {
