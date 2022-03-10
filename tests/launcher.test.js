@@ -3,8 +3,8 @@ describe('onPrepare', () => {
     const options = { tunnel: true }
     const caps = [{}]
     const config = {
-        user: 'foobaruser',
-        key: '12345'
+        user: process.env.LT_USERNAME,
+        key: process.env.LT_ACCESS_KEY
     }
 
     it('should not call LambdaTest tunnel if it\'s undefined', () => {
@@ -55,8 +55,8 @@ describe('onComplete', () => {
     it('should properly resolve if everything works', async () => {
         const service = new LambdaTestLauncher({ tunnel: true })
         service.onPrepare({
-            user: 'foobaruser',
-            key: '12345'
+            user: process.env.LT_USERNAME,
+            key: process.env.LT_ACCESS_KEY
         }, [{}])
         service.lambdatestTunnelProcess.isRunning = () => true
         service.lambdatestTunnelProcess.stop = (fn) => fn()
