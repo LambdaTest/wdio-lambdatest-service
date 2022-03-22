@@ -1,4 +1,4 @@
-name: Node Tunnel health check
+name: WDIO health check
 on:
   schedule:
     - cron: "0 18 * * *"
