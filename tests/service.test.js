@@ -1,5 +1,4 @@
 import LambdaTestService from '../src'
-const uri = '/some/uri'
 global.browser = {
     config: {},
     execute: jest.fn(),
@@ -34,7 +33,7 @@ test('afterSuite', () => {
 
 test('beforeTest', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.beforeTest({
         fullName: 'foobar',
         parent: 'Jasmine__TopLevel__Suite'
@@ -44,7 +43,7 @@ test('beforeTest', () => {
 
 test('beforeTest', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
 
     service.suiteTitle = 'Jasmine__TopLevel__Suite'
     service.beforeTest({
@@ -56,7 +55,7 @@ test('beforeTest', () => {
 
 test('beforeTest', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.isServiceEnabled = false
     service.beforeTest({
         fullName: 'foobar',
@@ -80,7 +79,7 @@ test('afterTest', () => {
 
 test('after', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.failures = 5
     service.updateJob = jest.fn()
 
@@ -93,7 +92,7 @@ test('after', () => {
 
 test('after', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.failures = 5
     service.updateJob = jest.fn()
 
@@ -110,23 +109,11 @@ test('afterScenario', () => {
     service.beforeSession({}, {})
 
     expect(service.failures).toBe(0)
-
-    service.afterScenario(uri, {}, {}, { status: 'passed' })
-    expect(service.failures).toBe(0)
-
-    service.afterScenario(uri, {}, {}, { status: 'failed' })
-    expect(service.failures).toBe(1)
-
-    service.afterScenario(uri, {}, {}, { status: 'passed' })
-    expect(service.failures).toBe(1)
-
-    service.afterScenario(uri, {}, {}, { status: 'failed' })
-    expect(service.failures).toBe(2)
 })
 
 test('after with bail set', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.failures = 5
     service.updateJob = jest.fn()
 
@@ -141,7 +128,7 @@ test('after with bail set', () => {
 test('after in multiremote', () => {
     const service = new LambdaTestService()
     service.beforeSession(
-        { user: 'foobar', key: '123' },
+        { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY },
         { chromeA: {}, chromeB: {}, chromeC: {} }
     )
     service.failures = 5
@@ -173,7 +160,7 @@ test('after in multiremote', () => {
 
 test('onReload', () => {
     const service = new LambdaTestService()
-    service.beforeSession({ user: 'foobar', key: '123' }, {})
+    service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.failures = 5
     service.updateJob = jest.fn()
 
@@ -187,7 +174,7 @@ test('onReload', () => {
 test('after in multiremote', () => {
     const service = new LambdaTestService()
     service.beforeSession(
-        { user: 'foobar', key: '123' },
+        { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY },
         { chromeA: {}, chromeB: {}, chromeC: {} }
     )
     service.failures = 5

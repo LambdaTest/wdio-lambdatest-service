@@ -57,12 +57,14 @@ export default class LambdaRestService {
     passed,
     retries
   }) {
+    console.log(error, result, duration, retries)
     if (!passed) {
       ++this.failures;
     }
   }
 
   afterScenario(world, { passed, error, duration }) {
+    console.log(error, duration)
     if (!passed) {
       ++this.failures;
     }
@@ -125,7 +127,8 @@ export default class LambdaRestService {
       });
     });
   }
-  catch(_){
+  catch(ex){
+    console.log(ex);
   }
     this.failures = 0;
   }
