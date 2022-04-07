@@ -42,7 +42,6 @@ export default class LambdaRestService {
       this.testTitle = test.title
     }
     
-
     if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
       this.suiteTitle = test.fullName.slice(0, test.fullName.indexOf(test.title) - 1);
     }
@@ -119,11 +118,10 @@ export default class LambdaRestService {
   }
 
   async _update ( sessionId, failures, calledOnReload = false, browserName ) {
-    
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-    await sleep(5000) 
-    return await this.updateJob(sessionId, failures, calledOnReload = false, browserName);
-
+    
+    await sleep(5000)
+    return await this.updateJob(sessionId, failures, calledOnReload, browserName);
   }
 
   async updateJob(sessionId, failures, calledOnReload = false, browserName) {
