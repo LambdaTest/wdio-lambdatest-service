@@ -1,6 +1,8 @@
 WebdriverIO LambdaTest Service
 ========================
 
+[![WDIO health check](https://github.com/LambdaTest/wdio-lambdatest-service/actions/workflows/healthcheck.yml/badge.svg?branch=master)](https://github.com/LambdaTest/wdio-lambdatest-service/actions/workflows/healthcheck.yml)
+
 > A WebdriverIO service that manages tunnel and job metadata for LambdaTest users.
 
 ## Installation
