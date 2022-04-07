@@ -38,6 +38,10 @@ export default class LambdaRestService {
     if (!this.isServiceEnabled) {
       return;
     }
+    if (test.title){
+      this.testTitle = test.title
+    }
+    
 
     if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
       this.suiteTitle = test.fullName.slice(0, test.fullName.indexOf(test.title) - 1);
@@ -88,12 +92,12 @@ export default class LambdaRestService {
 
     if (!global.browser.isMultiremote) {
       log.info(`Update job with sessionId ${global.browser.sessionId}, ${status}`);
-      return this.updateJob(global.browser.sessionId, failures);
+      return this._update(global.browser.sessionId, failures);
     }
 
     return Promise.all(Object.keys(this.capabilities).map(browserName => {
       log.info(`Update multiremote job for browser '${browserName}' and sessionId ${global.browser[browserName].sessionId}, ${status}`);
-      return this.updateJob(global.browser[browserName].sessionId, failures, false, browserName);
+      return this._update(global.browser[browserName].sessionId, failures, false, browserName);
     }));
   }
 
@@ -106,12 +110,20 @@ export default class LambdaRestService {
 
     if (!global.browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
-      return this.updateJob(oldSessionId, this.failures, true);
+      return this._update(oldSessionId, this.failures, true);
     }
 
     const browserName = global.browser.instances.filter(browserName => global.browser[browserName].sessionId === newSessionId)[0];
     log.info(`Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`);
-    return this.updateJob(oldSessionId, this.failures, true, browserName);
+    return this._update(oldSessionId, this.failures, true, browserName);
+  }
+
+  async _update ( sessionId, failures, calledOnReload = false, browserName ) {
+    
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    await sleep(5000) 
+    return await this.updateJob(sessionId, failures, calledOnReload = false, browserName);
+
   }
 
   async updateJob(sessionId, failures, calledOnReload = false, browserName) {
@@ -136,7 +148,12 @@ export default class LambdaRestService {
   getBody(failures, calledOnReload = false, browserName) {
     let body = {};
     if (!(!global.browser.isMultiremote && this.capabilities.name || global.browser.isMultiremote && this.capabilities[browserName].capabilities.name)) {
-      body.name = this.suiteTitle;
+      
+      body.name = this.suiteTitle + ' - ' + this.testTitle
+      
+      if (this.capabilities['LT:Options'] && this.capabilities['LT:Options'].name){
+        body.name = this.capabilities['LT:Options'].name
+      }
       
       if (browserName) {
         body.name = `${browserName}: ${body.name}`;
