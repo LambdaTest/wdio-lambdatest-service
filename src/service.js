@@ -1,9 +1,21 @@
-import LambdaRestClient from '@lambdatest/node-rest-client'
-import logger from '@wdio/logger'
+"use strict";
 
-const log = logger('@wdio/lambdatest-service')
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
-export default class LambdaRestService {
+require("source-map-support/register");
+
+var _nodeRestClient = _interopRequireDefault(require("@lambdatest/node-rest-client"));
+
+var _logger = _interopRequireDefault(require("@wdio/logger"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const log = (0, _logger.default)('@wdio/lambdatest-service');
+
+class LambdaRestService {
   constructor() {
     this.testCnt = 0;
     this.failures = 0;
@@ -14,8 +26,11 @@ export default class LambdaRestService {
     this.capabilities = capabilities;
     const lambdaCredentials = {
       username: this.config.user,
-      accessKey: this.config.key
+      accessKey: this.config.key,
+      isApp : false
     };
+
+    if (this.config.product === 'appAutomation') lambdaCredentials.isApp =true
 
     if (this.config.logFile) {
       lambdaCredentials.logFile = this.config.logFile;
@@ -24,7 +39,7 @@ export default class LambdaRestService {
     this.isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
 
     try {
-      this.api = LambdaRestClient.AutomationClient(lambdaCredentials);
+      this.api = _nodeRestClient.default.AutomationClient(lambdaCredentials);
     } catch (_) {
       this.isServiceEnabled = false;
     }
@@ -38,12 +53,12 @@ export default class LambdaRestService {
     if (!this.isServiceEnabled) {
       return;
     }
-    if (test.title){
-      this.testTitle = test.title
+
+    if (test.title) {
+      this.testTitle = test.title;
     }
-    
     if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
-      this.suiteTitle = test.fullName.slice(0, test.fullName.indexOf(test.title) - 1);
+      this.suiteTitle = test.fullName;
     }
   }
 
@@ -60,14 +75,20 @@ export default class LambdaRestService {
     passed,
     retries
   }) {
-    console.log(error, result, duration, retries)
+    console.log(error, result, duration, retries);
+
     if (!passed) {
       ++this.failures;
     }
   }
 
-  afterScenario(world, { passed, error, duration }) {
-    console.log(error, duration)
+  afterScenario(world, {
+    passed,
+    error,
+    duration
+  }) {
+    console.log(error, duration);
+
     if (!passed) {
       ++this.failures;
     }
@@ -83,10 +104,13 @@ export default class LambdaRestService {
     if (global.browser.config.mochaOpts && global.browser.config.mochaOpts.bail && Boolean(result)) {
       failures = 1;
     }
-    console.log("=========result=========", result, result === 0)
+
+    console.log("=========result=========", result, result === 0);
+
     if (result === 0) {
       failures = 0;
     }
+
     const status = 'status: ' + (failures > 0 ? 'failed' : 'passed');
 
     if (!global.browser.isMultiremote) {
@@ -117,42 +141,47 @@ export default class LambdaRestService {
     return this._update(oldSessionId, this.failures, true, browserName);
   }
 
-  async _update ( sessionId, failures, calledOnReload = false, browserName ) {
+  async _update(sessionId, failures, calledOnReload = false, browserName) {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-    
-    await sleep(5000)
+
+    await sleep(5000);
     return await this.updateJob(sessionId, failures, calledOnReload, browserName);
   }
 
   async updateJob(sessionId, failures, calledOnReload = false, browserName) {
     const body = this.getBody(failures, calledOnReload, browserName);
-    try{
-    await new Promise((resolve, reject) => {
-      this.api.updateSessionById(sessionId, body, (err, result) => {
-        if (err) {
-          return reject(err);
-        }
 
-        return resolve(result);
+    try {
+      await new Promise((resolve, reject) => {
+        this.api.updateSessionById(sessionId, body, (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+
+          return resolve(result);
+        });
       });
-    });
-  }
-  catch(ex){
-    console.log(ex);
-  }
+    } catch (ex) {
+      console.log(ex);
+    }
+
     this.failures = 0;
   }
 
   getBody(failures, calledOnReload = false, browserName) {
     let body = {};
+
     if (!(!global.browser.isMultiremote && this.capabilities.name || global.browser.isMultiremote && this.capabilities[browserName].capabilities.name)) {
-      
-      body.name = this.suiteTitle + ' - ' + this.testTitle
-      
-      if (this.capabilities['LT:Options'] && this.capabilities['LT:Options'].name){
-        body.name = this.capabilities['LT:Options'].name
+      let testName = this.suiteTitle
+      if (this.testTitle){
+        testName = testName + ' - ' + this.testTitle;
       }
-      
+      body.name = testName;
+
+      if (this.capabilities['LT:Options'] && this.capabilities['LT:Options'].name) {
+        body.name = this.capabilities['LT:Options'].name;
+      }
+
       if (browserName) {
         body.name = `${browserName}: ${body.name}`;
       }
