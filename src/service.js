@@ -41,7 +41,7 @@ export default class LambdaRestService {
     if (!this.isServiceEnabled) {
       return;
     }
-    if (test.title){
+    if (test.title && !!!this.testTitle){
       this.testTitle = test.title
     }
     
