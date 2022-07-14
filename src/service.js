@@ -33,6 +33,12 @@ export default class LambdaRestService {
     }
   }
 
+  beforeScenario(world) {
+    if (!!!this.suiteTitle){
+      this.suiteTitle = world.pickle.name || 'unknown scenario'
+    }
+  }
+
   beforeSuite(suite) {
     this.suiteTitle = suite.title;
   }
