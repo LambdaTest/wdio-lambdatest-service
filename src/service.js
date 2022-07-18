@@ -14,8 +14,11 @@ export default class LambdaRestService {
     this.capabilities = capabilities;
     const lambdaCredentials = {
       username: this.config.user,
-      accessKey: this.config.key
+      accessKey: this.config.key,
+      isApp : false
     };
+
+    if (this.config.product === 'appAutomation') lambdaCredentials.isApp =true
 
     if (this.config.logFile) {
       lambdaCredentials.logFile = this.config.logFile;
@@ -30,6 +33,12 @@ export default class LambdaRestService {
     }
   }
 
+  beforeScenario(world) {
+    if (!!!this.suiteTitle){
+      this.suiteTitle = world.pickle.name || 'unknown scenario'
+    }
+  }
+
   beforeSuite(suite) {
     this.suiteTitle = suite.title;
   }
@@ -38,12 +47,12 @@ export default class LambdaRestService {
     if (!this.isServiceEnabled) {
       return;
     }
-    if (test.title){
+    if (test.title && !!!this.testTitle){
       this.testTitle = test.title
     }
     
     if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
-      this.suiteTitle = test.fullName.slice(0, test.fullName.indexOf(test.title) - 1);
+      this.suiteTitle = test.fullName;
     }
   }
 
@@ -146,8 +155,11 @@ export default class LambdaRestService {
   getBody(failures, calledOnReload = false, browserName) {
     let body = {};
     if (!(!global.browser.isMultiremote && this.capabilities.name || global.browser.isMultiremote && this.capabilities[browserName].capabilities.name)) {
-      
-      body.name = this.suiteTitle + ' - ' + this.testTitle
+      let testName = this.suiteTitle
+      if (this.testTitle){
+        testName = testName + ' - ' + this.testTitle;
+      }
+      body.name = testName
       
       if (this.capabilities['LT:Options'] && this.capabilities['LT:Options'].name){
         body.name = this.capabilities['LT:Options'].name
