@@ -34,8 +34,8 @@
     "url": "https://github.com/LambdaTest/wdio-lambdatest-service/issues"
   },
   "dependencies": {
-    "@lambdatest/node-rest-client": "*",
-    "@lambdatest/node-tunnel": "*",
+    "@lambdatest/node-rest-client": "^1.0.3",
+    "@lambdatest/node-tunnel": "^3.0.7",
     "@wdio/logger": "6.0.0-alpha.0",
     "source-map-support": "^0.5.16"
   },
