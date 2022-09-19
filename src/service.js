@@ -34,7 +34,7 @@ export default class LambdaRestService {
   }
 
   beforeScenario(world) {
-    if (!!!this.suiteTitle){
+    if (!this.suiteTitle){
       this.suiteTitle = world.pickle.name || 'unknown scenario'
     }
   }
@@ -47,7 +47,7 @@ export default class LambdaRestService {
     if (!this.isServiceEnabled) {
       return;
     }
-    if (test.title && !!!this.testTitle){
+    if (test.title && !this.testTitle){
       this.testTitle = test.title
     }
     
