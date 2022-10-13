@@ -35,7 +35,7 @@ export default class LambdaRestService {
 
   beforeScenario(world) {
     if (!this.suiteTitle){
-      this.suiteTitle = world.pickle.name || 'unknown scenario'
+      this.suiteTitle = world?.pickle?.name || 'unknown scenario'
     }
   }
 
@@ -53,6 +53,12 @@ export default class LambdaRestService {
     
     if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
       this.suiteTitle = test.fullName;
+    }
+  }
+
+  beforeStep(step) {
+    if (!this.suiteTitle || this.suiteTitle == 'unknown scenario') {
+      this.suiteTitle = step?.step?.scenario?.name || 'unknown scenario';
     }
   }
 
