@@ -56,6 +56,12 @@ export default class LambdaRestService {
     }
   }
 
+  beforeStep(step) {
+    if (!this.suiteTitle || this.suiteTitle == 'unknown scenario') {
+      this.suiteTitle = step?.step?.scenario?.name || 'unknown scenario';
+    }
+  }
+
   afterSuite(suite) {
     if (Object.prototype.hasOwnProperty.call(suite, 'error')) {
       ++this.failures;
