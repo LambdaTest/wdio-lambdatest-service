@@ -38,7 +38,6 @@ export default class LambdaRestService {
     }
   }
 
-
   beforeSuite(suite) {
     this.suiteTitle = suite.title;
   }
