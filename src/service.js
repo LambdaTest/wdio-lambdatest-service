@@ -32,10 +32,9 @@ export default class LambdaRestService {
       this.isServiceEnabled = false;
     }
   }
-
-  beforeScenario(world) {
+  beforeScenario(world, context) {
     if (!this.suiteTitle){
-      this.suiteTitle = world?.pickle?.name || 'unknown scenario'
+      this.suiteTitle = world?.gherkinDocument?.feature?.name|| context?.document?.feature?.name || world?.pickle?.name || 'unknown scenario';
     }
   }
 
@@ -58,7 +57,7 @@ export default class LambdaRestService {
 
   beforeStep(step) {
     if (!this.suiteTitle || this.suiteTitle == 'unknown scenario') {
-      this.suiteTitle = step?.step?.scenario?.name || 'unknown scenario';
+      this.suiteTitle = step?.document?.feature?.name || step?.step?.scenario?.name || 'unknown scenario';
     }
   }
 
@@ -98,7 +97,7 @@ export default class LambdaRestService {
     if (global.browser.config.mochaOpts && global.browser.config.mochaOpts.bail && Boolean(result)) {
       failures = 1;
     }
-    console.log("=========result=========", result, result === 0)
+    
     if (result === 0) {
       failures = 0;
     }
