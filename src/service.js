@@ -161,9 +161,7 @@ export default class LambdaRestService {
     let body = {};
     if (!(!global.browser.isMultiremote && this.capabilities.name || global.browser.isMultiremote && this.capabilities[browserName].capabilities.name)) {
       let testName = this.suiteTitle
-      if (this.testTitle){
-        testName = testName + ' - ' + this.testTitle;
-      }
+      
       body.name = testName
       
       if (this.capabilities['LT:Options'] && this.capabilities['LT:Options'].name){
