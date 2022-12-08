@@ -2,8 +2,13 @@ import { performance, PerformanceObserver } from 'perf_hooks'
 import logger from '@wdio/logger'
 import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
 import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants'
+
 const log = logger('@wdio/lambdatest-service')
+
 export default class LambdaTestLauncher {
+    lambdatestTunnelProcess
+    options
+
     constructor(options) {
         this.options = options
     }
