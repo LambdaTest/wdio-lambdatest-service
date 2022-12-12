@@ -51,7 +51,9 @@ export default class LambdaRestService {
     }
     
     if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
-      this.suiteTitle = test.fullName;
+      const testSuiteName = test.fullName.slice(0, test.fullName.indexOf(test.description || '') - 1)
+      this.suiteTitle = testSuiteName;
+      global.browser.execute("lambda-name="+this.suiteTitle)
     }
   }
 
