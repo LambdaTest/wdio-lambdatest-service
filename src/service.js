@@ -322,22 +322,21 @@ export default class LambdaRestService {
   }
 
   async _setSessionName(sessionName) {
-    return this._multiRemoteAction(async (sessionId) => {
-      const body = { name: sessionName };
-      try {
-        await new Promise((resolve, reject) => {
-          if (!this._api) {
-            return reject(new Error('LambdaTest service is not enabled'));
-          }
-          this._api.updateSessionById(sessionId, body, (err, result) => {
-            if (err) return reject(err);
-            return resolve(result);
-          });
-        });
-      } catch (ex) {
-        console.log(ex);
-      }
-    });
+    await this._executeCommand(`lambda-name=${sessionName}`);
+  }
+
+  async _executeCommand(cmd) {
+    if (!this._browser) {
+        return;
+    }
+    if (this._browser.isMultiremote) {
+      const multiRemoteBrowser = this._browser;
+      return Promise.all(Object.keys(this._capabilities).map(async (browserName) => {
+        const browser = multiRemoteBrowser[browserName];
+        return await browser.execute(cmd);
+      }))
+    }
+    return await this._browser.execute(cmd);
   }
 
   async _multiRemoteAction(action) {
