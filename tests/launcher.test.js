@@ -1,4 +1,5 @@
 import LambdaTestLauncher from '../src/launcher'
+
 describe('onPrepare', () => {
     const options = { tunnel: true }
     const caps = [{}]
@@ -7,31 +8,27 @@ describe('onPrepare', () => {
         key: process.env.LT_ACCESS_KEY
     }
 
-    it('should not call LambdaTest tunnel if it\'s undefined', () => {
+    it('should not call LambdaTest tunnel if it\'s undefined', async () => {
         const service = new LambdaTestLauncher({})
-        service.onPrepare(config, caps)
+        await service.onPrepare(config, caps)
         expect(service.tunnel).toBeUndefined()
         expect(service.lambdatestTunnelProcess).toBeUndefined()
     })
 
-    it('should not call LambdaTest tunnel if it\'s false', () => {
+    it('should not call LambdaTest tunnel if it\'s false', async () => {
         const service = new LambdaTestLauncher({
             tunnel: false
         })
-        service.onPrepare(config, caps)
+        await service.onPrepare(config, caps)
         expect(service.lambdatestTunnelProcess).toBeUndefined()
     })
 
     it('should reject if tunnel.start throws an error', async () => {
         const service = new LambdaTestLauncher(options)
         try {
-            await service.onPrepare(config, caps)
+            await service.onPrepare({}, caps)
         } catch (e) {
-            expect(e).toEqual({
-                message:
-                    'Either username or token is invalid or user is not active',
-                type: 'error'
-            })
+            expect(e).toEqual({ message: 'user and key is required' })
         }
     }, 30000)
 
@@ -48,18 +45,30 @@ describe('onPrepare', () => {
 })
 
 describe('onComplete', () => {
-    it('should properly resolve if everything works', async () => {
-        const service = new LambdaTestLauncher({}, [], {})
-        expect(service.onComplete()).toBeUndefined()
-    })
+    it('should throw error if tunnel is not running', async () => {
+        const service = new LambdaTestLauncher({ tunnel: true })
+        try {
+            await service.onPrepare({
+                user: process.env.LT_USERNAME,
+                key: process.env.LT_ACCESS_KEY
+            }, [{}])
+            await service.onComplete()
+        } catch (e) {
+            expect(e).toEqual(new Error('LambdaTest tunnel is not running'))
+        }
+    }, 30000)
     it('should properly resolve if everything works', async () => {
         const service = new LambdaTestLauncher({ tunnel: true })
-        service.onPrepare({
+        await service.onPrepare({
             user: process.env.LT_USERNAME,
             key: process.env.LT_ACCESS_KEY
         }, [{}])
         service.lambdatestTunnelProcess.isRunning = () => true
         service.lambdatestTunnelProcess.stop = (fn) => fn()
-        expect(service.onComplete()).toBeDefined()
-    })
+        try {
+            await service.onComplete()
+        } catch (e) {
+            expect(e).toBeUndefined()
+        }
+    }, 30000)
 })

@@ -20,6 +20,8 @@
     "build": "run-s clean compile",
     "clean": "rimraf ./build",
     "compile": "babel src/ -d build/ --config-file ./babel.config.js",
+    "lint:staged": "git diff-index --cached --name-only --diff-filter=d HEAD | grep -E \".*\\.[cm]?js$\" | xargs node_modules/eslint/bin/eslint.js",
+    "postbuild": "cp src/*.d.ts build/",
     "test": "run-s test:*",
     "test:eslint": "eslint --cache src tests",
     "test:coverage": "jest --coverage --watchAll=false || exit 0"
@@ -77,7 +79,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "git diff-index --name-only --diff-filter=d HEAD | grep -E \"(.*)\\.js$\" | xargs node_modules/eslint/bin/eslint.js -c .eslintrc.js",
+      "pre-commit": "npm run lint:staged",
       "pre-push": "npm run test:eslint"
     }
   },
@@ -104,5 +106,8 @@
     "lockfiles": {
       "outOfRangeUpdatesOnly": true
     }
+  },
+  "directories": {
+    "test": "tests"
   }
 }

@@ -1,5 +1,5 @@
 import LambdaTestService from '../src'
-global.browser = {
+const browser = {
     config: {},
     execute: jest.fn(),
     chromeA: { sessionId: 'sessionChromeA' },
@@ -8,21 +8,23 @@ global.browser = {
     instances: ['chromeA', 'chromeB', 'chromeC']
 }
 test('beforeSuite', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     expect(service.suiteTitle).toBeUndefined()
     service.beforeSuite({ title: 'foobar' })
     expect(service.suiteTitle).toBe('foobar')
 })
 
 test('beforeSession should set to unknown creds if no lambdatest user and key are found', () => {
-    const service = new LambdaTestService()
-    const config = {}
-    service.beforeSession(config, {})
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
+    service.beforeSession({}, {})
     expect(service.isServiceEnabled).toBe(false)
 })
 
 test('afterSuite', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({}, {})
 
     expect(service.failures).toBe(0)
@@ -32,7 +34,8 @@ test('afterSuite', () => {
 })
 
 test('beforeTest', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.beforeTest({
         fullName: 'foobar',
@@ -42,9 +45,9 @@ test('beforeTest', () => {
 })
 
 test('beforeTest', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
-
     service.suiteTitle = 'Jasmine__TopLevel__Suite'
     service.beforeTest({
         fullName: 'foobar',
@@ -54,7 +57,8 @@ test('beforeTest', () => {
 })
 
 test('beforeTest', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.isServiceEnabled = false
     service.beforeTest({
@@ -65,7 +69,8 @@ test('beforeTest', () => {
 })
 
 test('afterTest', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({}, {})
 
     expect(service.failures).toBe(0)
@@ -78,79 +83,86 @@ test('afterTest', () => {
 })
 
 test('after', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.failures = 5
-    service.updateJob = jest.fn()
+    service._update = jest.fn()
 
-    global.browser.isMultiremote = false
-    global.browser.sessionId = 'foobar'
+    service._browser.isMultiremote = false
+    service._browser.sessionId = 'foobar'
     service.after()
 
-    expect(service.updateJob).toBeCalledWith('foobar', 5)
+    expect(service._update).toBeCalledWith('foobar', 5)
 })
 
 test('after', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
+    service._config = { ...service._config, mochaOpts: { bail: 1 } }
     service.failures = 5
-    service.updateJob = jest.fn()
+    service._update = jest.fn()
 
-    global.browser.isMultiremote = false
-    global.browser.sessionId = 'foobar'
-    global.browser.config = { mochaOpts: { bail: 1 } }
+    service._browser.isMultiremote = false
+    service._browser.sessionId = 'foobar'
+    service._browser.config = { mochaOpts: { bail: 1 } }
     service.after(1)
 
-    expect(service.updateJob).toBeCalledWith('foobar', 1)
+    expect(service._update).toBeCalledWith('foobar', 1)
 })
 
 test('afterScenario', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({}, {})
 
     expect(service.failures).toBe(0)
 })
 
 test('after with bail set', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
+    service._config = { ...service._config, mochaOpts: { bail: 1 } }
     service.failures = 5
-    service.updateJob = jest.fn()
+    service._update = jest.fn()
 
-    global.browser.isMultiremote = false
-    global.browser.sessionId = 'foobar'
-    global.browser.config = { mochaOpts: { bail: 1 } }
+    service._browser.isMultiremote = false
+    service._browser.sessionId = 'foobar'
+    service._browser.config = { mochaOpts: { bail: 1 } }
     service.after(1)
 
-    expect(service.updateJob).toBeCalledWith('foobar', 1)
+    expect(service._update).toBeCalledWith('foobar', 1)
 })
 
 test('after in multiremote', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession(
         { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY },
         { chromeA: {}, chromeB: {}, chromeC: {} }
     )
     service.failures = 5
-    service.updateJob = jest.fn()
+    service._update = jest.fn()
 
-    global.browser.isMultiremote = true
-    global.browser.sessionId = 'foobar'
+    service._browser.isMultiremote = true
+    service._browser.sessionId = 'foobar'
     service.after()
 
-    expect(service.updateJob).toBeCalledWith(
+    expect(service._update).toBeCalledWith(
         'sessionChromeA',
         5,
         false,
         'chromeA'
     )
-    expect(service.updateJob).toBeCalledWith(
+    expect(service._update).toBeCalledWith(
         'sessionChromeB',
         5,
         false,
         'chromeB'
     )
-    expect(service.updateJob).toBeCalledWith(
+    expect(service._update).toBeCalledWith(
         'sessionChromeC',
         5,
         false,
@@ -159,33 +171,35 @@ test('after in multiremote', () => {
 })
 
 test('onReload', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY }, {})
     service.failures = 5
-    service.updateJob = jest.fn()
+    service._update = jest.fn()
 
-    global.browser.isMultiremote = false
-    global.browser.sessionId = 'foobar'
+    service._browser.isMultiremote = false
+    service._browser.sessionId = 'foobar'
     service.onReload('oldbar', 'newbar')
 
-    expect(service.updateJob).toBeCalledWith('oldbar', 5, true)
+    expect(service._update).toBeCalledWith('oldbar', 5, true)
 })
 
 test('after in multiremote', () => {
-    const service = new LambdaTestService()
+    const service = new LambdaTestService({}, {}, {})
+    service._browser = browser
     service.beforeSession(
         { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY },
         { chromeA: {}, chromeB: {}, chromeC: {} }
     )
     service.failures = 5
-    service.updateJob = jest.fn()
+    service._update = jest.fn()
 
-    global.browser.isMultiremote = true
-    global.browser.sessionId = 'foobar'
-    global.browser.chromeB.sessionId = 'newSessionChromeB'
+    service._browser.isMultiremote = true
+    service._browser.sessionId = 'foobar'
+    service._browser.chromeB.sessionId = 'newSessionChromeB'
     service.onReload('sessionChromeB', 'newSessionChromeB')
 
-    expect(service.updateJob).toBeCalledWith(
+    expect(service._update).toBeCalledWith(
         'sessionChromeB',
         5,
         true,
