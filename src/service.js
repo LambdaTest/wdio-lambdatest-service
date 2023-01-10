@@ -96,7 +96,7 @@ export default class LambdaRestService {
 
     let failures = this.failures;
 
-    if (global.browser.config.mochaOpts && global.browser.config.mochaOpts.bail && Boolean(result)) {
+    if (global.browser.options.mochaOpts && global.browser.options.mochaOpts.bail && Boolean(result)) {
       failures = 1;
     }
     
