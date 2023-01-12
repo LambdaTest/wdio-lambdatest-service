@@ -1,4 +1,11 @@
-import LambdaTestLauncher from '../src/launcher'
+import path from 'path'
+import { describe, expect, it, vi } from 'vitest'
+import LambdaTestLauncher from '../src/launcher.js'
+
+process.env.LT_USERNAME = process.env.LT_USERNAME ?? 'foo'
+process.env.LT_ACCESS_KEY = process.env.LT_ACCESS_KEY ?? 'bar'
+
+vi.mock('@wdio/logger', () => import(path.join(process.cwd(), '__mocks__', '@wdio/logger')))
 
 describe('onPrepare', () => {
     const options = { tunnel: true }
@@ -6,12 +13,12 @@ describe('onPrepare', () => {
     const config = {
         user: process.env.LT_USERNAME,
         key: process.env.LT_ACCESS_KEY
-    }
+    } as any
 
     it('should not call LambdaTest tunnel if it\'s undefined', async () => {
         const service = new LambdaTestLauncher({})
         await service.onPrepare(config, caps)
-        expect(service.tunnel).toBeUndefined()
+        expect(service.options.tunnel).toBeUndefined()
         expect(service.lambdatestTunnelProcess).toBeUndefined()
     })
 
@@ -26,7 +33,7 @@ describe('onPrepare', () => {
     it('should reject if tunnel.start throws an error', async () => {
         const service = new LambdaTestLauncher(options)
         try {
-            await service.onPrepare({}, caps)
+            await service.onPrepare({} as any, caps)
         } catch (e) {
             expect(e).toEqual({ message: 'user and key is required' })
         }
@@ -51,7 +58,7 @@ describe('onComplete', () => {
             await service.onPrepare({
                 user: process.env.LT_USERNAME,
                 key: process.env.LT_ACCESS_KEY
-            }, [{}])
+            } as any, [{}])
             await service.onComplete()
         } catch (e) {
             expect(e).toEqual(new Error('LambdaTest tunnel is not running'))
@@ -62,13 +69,16 @@ describe('onComplete', () => {
         await service.onPrepare({
             user: process.env.LT_USERNAME,
             key: process.env.LT_ACCESS_KEY
-        }, [{}])
-        service.lambdatestTunnelProcess.isRunning = () => true
-        service.lambdatestTunnelProcess.stop = (fn) => fn()
+        } as any, [{}])
+        if (!service.lambdatestTunnelProcess) {
+            throw new Error('lambdatestTunnelProcess is undefined')
+        }
+        expect(service.lambdatestTunnelProcess).toBeDefined()
+        expect(service.lambdatestTunnelProcess.isRunning()).toBe(true)
         try {
             await service.onComplete()
         } catch (e) {
-            expect(e).toBeUndefined()
+            expect(e).toBe(true)
         }
     }, 30000)
 })

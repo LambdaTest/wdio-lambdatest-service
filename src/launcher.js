@@ -1,7 +1,7 @@
 import { performance, PerformanceObserver } from 'perf_hooks'
 import logger from '@wdio/logger'
 import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
-import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants'
+import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants.js'
 
 const log = logger('@wdio/lambdatest-service')
 
@@ -52,7 +52,7 @@ export default class LambdaTestLauncher {
         let timer
         performance.mark('ltTunnelStart')
         return Promise.race([
-            new Promise((resolve, reject) => {
+            /** @type {Promise<void>} */(new Promise((resolve, reject) => {
                 this.lambdatestTunnelProcess.start(tunnelArguments, err => {
                     if (err) {
                         obs.disconnect()
@@ -77,7 +77,7 @@ export default class LambdaTestLauncher {
                         resolve()
                     })
                 })
-            }),
+            })),
             new Promise((resolve, reject) => {
                 /* istanbul ignore next */
                 timer = setTimeout(() => {

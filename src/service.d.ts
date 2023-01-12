@@ -7,19 +7,21 @@ export default class LambdaRestService implements Services.ServiceInstance {
     private _browser?;
     private _capabilities;
     private _config;
-    failReasons: string[];
-    failures: number;
-    failureStatuses: string[];
-    fullTitle: string;
-    isServiceEnabled: boolean;
-    options: LTOptions;
-    scenariosThatRan: string[];
-    suiteTitle: string;
-    testCnt: number;
-    testTitle: string;
+    private _failReasons;
+    private _failures;
+    private _failureStatuses;
+    private _fullTitle?;
+    private _isServiceEnabled;
+    private _options;
+    private _scenariosThatRan;
+    private _specsRan;
+    private _suiteTitle?;
+    private _testCnt;
+    private _testTitle?;
+
     constructor(options: LTOptions & SessionNameOptions, capabilities: Capabilities.RemoteCapability, config: Options.Testrunner);
     before(caps: Capabilities.RemoteCapability, specs: string[], browser: Browser<'async'> | MultiRemoteBrowser<'async'>): Promise<void>;
-    beforeSession(config: any): void;
+    beforeSession(config: Options.Testrunner, capabilities: Capabilities.RemoteCapability): void;
     /**
      * Runs before a Cucumber Scenario.
      * @param world world object containing information on pickle and test step

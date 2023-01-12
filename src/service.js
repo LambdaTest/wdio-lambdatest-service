@@ -1,4 +1,3 @@
-// @ts-check
 import LambdaRestClient from '@lambdatest/node-rest-client'
 import logger from '@wdio/logger'
 
@@ -17,39 +16,40 @@ export default class LambdaRestService {
   _browser;
   _capabilities;
   _config;
-  failures = 0;
-  failureStatuses = ['failed', 'ambiguous', 'undefined', 'unknown'];
-  fullTitle;
-  isServiceEnabled = true;
-  options = DEFAULT_OPTIONS;
-  scenariosThatRan = [];
-  specsRan = false;
-  suiteTitle;
-  testCnt = 0;
-  testTitle;
+  _failReasons = [];
+  _failures = 0;
+  _failureStatuses = ['failed', 'ambiguous', 'undefined', 'unknown'];
+  _fullTitle;
+  _isServiceEnabled = true;
+  _options = DEFAULT_OPTIONS;
+  _scenariosThatRan = [];
+  _specsRan = false;
+  _suiteTitle;
+  _testCnt = 0;
+  _testTitle;
 
-  constructor(options, capabilities, config) {
-    this.options = { ...DEFAULT_OPTIONS, ...options };
+  constructor(options = {}, capabilities = {}, config = {}) {
+    this._options = { ...DEFAULT_OPTIONS, ...options };
     this._capabilities = capabilities;
     this._config = config;
-    this.testCnt = 0;
-    this.failures = 0;
+    this._testCnt = 0;
+    this._failures = 0;
     // Cucumber specific
     const strict = Boolean(this._config?.cucumberOpts && this._config?.cucumberOpts?.strict);
     // See https://github.com/cucumber/cucumber-js/blob/master/src/runtime/index.ts#L136
     if (strict) {
-      this.failureStatuses.push('pending');
+      this._failureStatuses.push('pending');
     }
   }
 
   before(caps, specs, browser) {
     this._browser = browser;
-    this.scenariosThatRan = [];
+    this._scenariosThatRan = [];
   }
 
   beforeSession(config, capabilities) {
-    this._config = config;
-    this._capabilities = capabilities;
+    this._config = { ...this._config, ...config };
+    this._capabilities = { ...this._capabilities, ...capabilities };
     const lambdaCredentials = {
       username: this._config.user,
       accessKey: this._config.key,
@@ -64,28 +64,28 @@ export default class LambdaRestService {
       lambdaCredentials.logFile = this._config.logFile;
     }
 
-    this.isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
+    this._isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
 
     try {
       this._api = LambdaRestClient.AutomationClient(lambdaCredentials);
     } catch (_) {
-      this.isServiceEnabled = false;
+      this._isServiceEnabled = false;
     }
   }
 
   async beforeScenario(world, context) {
-    if (!this.suiteTitle) {
-      this.suiteTitle =
+    if (!this._suiteTitle) {
+      this._suiteTitle =
         world?.gherkinDocument?.feature?.name ||
         context?.document?.feature?.name ||
         world?.pickle?.name ||
         'unknown scenario';
-      await this.setSessionName(this.suiteTitle);
+      await this.setSessionName(this._suiteTitle);
     }
   }
 
   async beforeSuite(suite) {
-    this.suiteTitle = suite.title;
+    this._suiteTitle = suite.title;
 
     if (suite.title && suite.title !== 'Jasmine__TopLevel__Suite') {
       await this.setSessionName(suite.title);
@@ -93,24 +93,24 @@ export default class LambdaRestService {
   }
 
   async beforeTest(test) {
-    if (!this.isServiceEnabled) {
+    if (!this._isServiceEnabled) {
       return;
     }
 
-    if (test.title && !this.testTitle) {
-      this.testTitle = test.title;
+    if (test.title && !this._testTitle) {
+      this._testTitle = test.title;
     }
 
-    let suiteTitle = this.suiteTitle;
+    let suiteTitle = this._suiteTitle;
 
     if (test.fullName) {
       // For Jasmine, `suite.title` is `Jasmine__TopLevel__Suite`.
       // This tweak allows us to set the real suite name.
       const testSuiteName = test.fullName.slice(0, test.fullName.indexOf(test.description || '') - 1);
-      if (this.suiteTitle === 'Jasmine__TopLevel__Suite') {
+      if (this._suiteTitle === 'Jasmine__TopLevel__Suite') {
         suiteTitle = testSuiteName;
-      } else if (this.suiteTitle) {
-        suiteTitle = getParentSuiteName(this.suiteTitle, testSuiteName);
+      } else if (this._suiteTitle) {
+        suiteTitle = getParentSuiteName(this._suiteTitle, testSuiteName);
       }
     }
 
@@ -118,33 +118,33 @@ export default class LambdaRestService {
   }
 
   async beforeFeature(uri, feature) {
-    this.suiteTitle = feature.name;
-    await this.setSessionName(this.suiteTitle);
+    this._suiteTitle = feature.name;
+    await this.setSessionName(this._suiteTitle);
   }
 
   async beforeStep(step) {
-    if (!this.suiteTitle || this.suiteTitle == 'unknown scenario') {
-      this.suiteTitle =
+    if (!this._suiteTitle || this._suiteTitle == 'unknown scenario') {
+      this._suiteTitle =
         step.document?.feature?.name ||
         step.step?.scenario?.name ||
         'unknown scenario';
-      await this.setSessionName(this.suiteTitle);
+      await this.setSessionName(this._suiteTitle);
     }
   }
 
   afterSuite(suite) {
     if (Object.prototype.hasOwnProperty.call(suite, 'error')) {
-      ++this.failures;
+      ++this._failures;
     }
   }
 
   afterTest(test, context, { error, passed }) {
-    this.specsRan = true;
+    this._specsRan = true;
 
     // remove failure if test was retried and passed
     // (Mocha only)
     if (test._retriedTest && passed) {
-      --this.failures;
+      --this._failures;
       return;
     }
 
@@ -164,29 +164,41 @@ export default class LambdaRestService {
 
     const isJasminePendingError = typeof error === 'string' && error.includes('marked Pending');
     if (!passed && !isJasminePendingError) {
-      ++this.failures;
+      ++this._failures;
+      this._failReasons.push((error && error.message) || 'Unknown Error')
     }
   }
 
-  afterScenario(world, { passed }) {
-    this.specsRan = true;
-    if (!passed) {
-      ++this.failures;
-    }
+  afterScenario(world, result) {
+    const { passed } = result || {};
+    this._specsRan = true;
     const status = world.result?.status.toLowerCase();
     if (status !== 'skipped') {
-      this.scenariosThatRan.push(world.pickle.name || 'unknown pickle name');
+      this._scenariosThatRan.push(world.pickle.name || 'unknown pickle name');
+    }
+    if (status && this._failureStatuses.includes(status)) {
+      const exception = (
+        (world.result && world.result.message) ||
+        (status === 'pending'
+          ? `Some steps/hooks are pending for scenario "${world.pickle.name}"`
+          : 'Unknown Error'
+        )
+      )
+      ++this._failures;
+      this._failReasons.push(exception)
+    } else if (typeof passed !== 'undefined' && !passed) {
+      ++this._failures;
     }
   }
 
   after(result) {
-    if (!this.isServiceEnabled) {
+    if (!this._isServiceEnabled) {
       return;
     }
 
-    let failures = this.failures;
+    let failures = this._failures;
 
-    // set failures if user has bail option set in which case afterTest and
+    // set _failures if user has bail option set in which case afterTest and
     // afterSuite aren't executed before after hook
     if (this._config.mochaOpts && this._config.mochaOpts.bail && Boolean(result)) {
       failures = 1;
@@ -196,11 +208,11 @@ export default class LambdaRestService {
       failures = 0;
     }
 
-    const { preferScenarioName } = this.options;
+    const { preferScenarioName } = this._options;
     // For Cucumber: Checks scenarios that ran (i.e. not skipped) on the session
     // Only 1 Scenario ran and option enabled => Redefine session name to Scenario's name
-    if (preferScenarioName && this.scenariosThatRan.length === 1) {
-      this.fullTitle = this.scenariosThatRan.pop();
+    if (preferScenarioName && this._scenariosThatRan.length === 1) {
+      this._fullTitle = this._scenariosThatRan.pop();
     }
 
     const status = 'status: ' + (failures > 0 ? 'failed' : 'passed');
@@ -217,34 +229,38 @@ export default class LambdaRestService {
   }
 
   async onReload(oldSessionId, newSessionId) {
-    if (!this.isServiceEnabled) {
+    if (!this._isServiceEnabled) {
       return;
     }
 
-    const status = 'status: ' + (this.failures > 0 ? 'failed' : 'passed');
+    const status = 'status: ' + (this._failures > 0 ? 'failed' : 'passed');
 
     if (!this._browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
-      await this._update(oldSessionId, this.failures, true);
+      await this._update(oldSessionId, this._failures, true);
     } else {
       const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
       log.info(`Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`);
-      await this._update(oldSessionId, this.failures, true, browserName);
+      await this._update(oldSessionId, this._failures, true, browserName);
     }
 
-    this.scenariosThatRan = [];
-    delete this.suiteTitle;
-    delete this.fullTitle;
+    this._failReasons = [];
+    this._scenariosThatRan = [];
+    delete this._suiteTitle;
+    delete this._fullTitle;
   }
 
-  async _update ( sessionId, failures, calledOnReload = false, browserName ) {
+  async _update(sessionId, failures, calledOnReload = false, browserName) {
+    if (!this._options.setSessionStatus) {
+      return;
+    }
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     await sleep(5000);
     return await this.updateJob(sessionId, failures, calledOnReload, browserName);
   }
 
-  async updateJob(sessionId, failures, calledOnReload = false, browserName) {
-    const body = this.getBody(failures, calledOnReload, browserName);
+  async updateJob(sessionId, _failures, calledOnReload = false, browserName) {
+    const body = this.getBody(_failures, calledOnReload, browserName);
     try {
       await new Promise((resolve, reject) => {
         if (!this._api) {
@@ -260,10 +276,10 @@ export default class LambdaRestService {
     } catch (ex) {
       console.log(ex);
     }
-    this.failures = 0;
+    this._failures = 0;
   }
 
-  getBody(failures, calledOnReload = false, browserName) {
+  getBody(_failures, calledOnReload = false, browserName) {
     let body = {};
     if (
       !(
@@ -272,7 +288,7 @@ export default class LambdaRestService {
           this._capabilities[browserName].capabilities.name)
       )
     ) {
-      body.name = this.fullTitle;
+      body.name = this._fullTitle;
 
       if (this._capabilities['LT:Options'] && this._capabilities['LT:Options'].name) {
         body.name = this._capabilities['LT:Options'].name;
@@ -282,8 +298,8 @@ export default class LambdaRestService {
         body.name = `${browserName}: ${body.name}`;
       }
 
-      if (calledOnReload || this.testCnt) {
-        let testCnt = ++this.testCnt;
+      if (calledOnReload || this._testCnt) {
+        let testCnt = ++this._testCnt;
 
         if (this._browser.isMultiremote) {
           testCnt = Math.ceil(testCnt / this._browser.instances.length);
@@ -292,18 +308,18 @@ export default class LambdaRestService {
         body.name += ` (${testCnt})`;
       }
     }
-    body.status_ind = failures > 0 ? 'failed' : 'passed';
+    body.status_ind = _failures > 0 ? 'failed' : 'passed';
     return body;
   }
 
   async setSessionName(suiteTitle, test) {
-    if (!this.options.setSessionName || !suiteTitle) {
+    if (!this._options.setSessionName || !suiteTitle) {
         return;
     }
 
     let name = suiteTitle;
-    if (this.options.sessionNameFormat) {
-      name = this.options.sessionNameFormat(
+    if (this._options.sessionNameFormat) {
+      name = this._options.sessionNameFormat(
           this._config,
           this._capabilities,
           suiteTitle,
@@ -311,13 +327,13 @@ export default class LambdaRestService {
       );
     } else if (test && !test.fullName) {
       // Mocha
-      const pre = this.options.sessionNamePrependTopLevelSuiteTitle ? `${suiteTitle} - ` : '';
-      const post = !this.options.sessionNameOmitTestTitle ? ` - ${test.title}` : '';
+      const pre = this._options.sessionNamePrependTopLevelSuiteTitle ? `${suiteTitle} - ` : '';
+      const post = !this._options.sessionNameOmitTestTitle ? ` - ${test.title}` : '';
       name = `${pre}${test.parent}${post}`;
     }
 
-    if (name !== this._fullTitle) {
-      this._fullTitle = name;
+    if (name !== this.__fullTitle) {
+      this.__fullTitle = name;
       await this._setSessionName(name);
     }
   }
