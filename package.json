@@ -29,7 +29,7 @@
     "clean:logs": "rimraf *.log",
     "clean:test-artifacts": "rimraf .lambdatest",
     "compile": "babel src/ -d build/ --config-file ./babel.config.js",
-    "lint:staged": "git diff-index --cached --name-only --diff-filter=d HEAD | grep -E \".*\\.[cm]?js$\" | xargs node_modules/eslint/bin/eslint.js",
+    "lint:staged": "git diff-index --cached --name-only --diff-filter=d HEAD | grep -E \".*\\.[cm]?js$\" | xargs -r node_modules/eslint/bin/eslint.js",
     "prepare": "run-s build",
     "postbuild": "cp src/*.d.ts build/",
     "test": "run-s test:*",
