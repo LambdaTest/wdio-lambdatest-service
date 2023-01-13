@@ -2,9 +2,6 @@ import path from 'path'
 import { describe, expect, it, vi } from 'vitest'
 import LambdaTestLauncher from '../src/launcher.js'
 
-process.env.LT_USERNAME = process.env.LT_USERNAME ?? 'foo'
-process.env.LT_ACCESS_KEY = process.env.LT_ACCESS_KEY ?? 'bar'
-
 vi.mock('@wdio/logger', () => import(path.join(process.cwd(), '__mocks__', '@wdio/logger')))
 
 describe('onPrepare', () => {
@@ -14,15 +11,20 @@ describe('onPrepare', () => {
         user: process.env.LT_USERNAME,
         key: process.env.LT_ACCESS_KEY
     } as any
+    let test: typeof it | typeof it.skip = it
 
-    it('should not call LambdaTest tunnel if it\'s undefined', async () => {
+    if (!config.user || !config.key) {
+        test = it.skip
+    }
+
+    test('should not call LambdaTest tunnel if it\'s undefined', async () => {
         const service = new LambdaTestLauncher({})
         await service.onPrepare(config, caps)
         expect(service.options.tunnel).toBeUndefined()
         expect(service.lambdatestTunnelProcess).toBeUndefined()
     })
 
-    it('should not call LambdaTest tunnel if it\'s false', async () => {
+    test('should not call LambdaTest tunnel if it\'s false', async () => {
         const service = new LambdaTestLauncher({
             tunnel: false
         })
@@ -30,7 +32,7 @@ describe('onPrepare', () => {
         expect(service.lambdatestTunnelProcess).toBeUndefined()
     })
 
-    it('should reject if tunnel.start throws an error', async () => {
+    test('should reject if tunnel.start throws an error', async () => {
         const service = new LambdaTestLauncher(options)
         try {
             await service.onPrepare({} as any, caps)
@@ -39,7 +41,7 @@ describe('onPrepare', () => {
         }
     }, 30000)
 
-    it('should add the tunnel property to a single capability', async () => {
+    test('should add the tunnel property to a single capability', async () => {
         const service = new LambdaTestLauncher(options)
         const capabilities = {}
         try {
@@ -52,24 +54,29 @@ describe('onPrepare', () => {
 })
 
 describe('onComplete', () => {
-    it('should throw error if tunnel is not running', async () => {
+    const config = {
+        user: process.env.LT_USERNAME,
+        key: process.env.LT_ACCESS_KEY
+    } as any
+    let test: typeof it | typeof it.skip = it
+
+    if (!config.user || !config.key) {
+        test = it.skip
+    }
+
+    test('should throw error if tunnel is not running', async () => {
         const service = new LambdaTestLauncher({ tunnel: true })
         try {
-            await service.onPrepare({
-                user: process.env.LT_USERNAME,
-                key: process.env.LT_ACCESS_KEY
-            } as any, [{}])
+            await service.onPrepare(config, [{}])
             await service.onComplete()
         } catch (e) {
             expect(e).toEqual(new Error('LambdaTest tunnel is not running'))
         }
     }, 30000)
-    it('should properly resolve if everything works', async () => {
+
+    test('should properly resolve if everything works', async () => {
         const service = new LambdaTestLauncher({ tunnel: true })
-        await service.onPrepare({
-            user: process.env.LT_USERNAME,
-            key: process.env.LT_ACCESS_KEY
-        } as any, [{}])
+        await service.onPrepare(config, [{}])
         if (!service.lambdatestTunnelProcess) {
             throw new Error('lambdatestTunnelProcess is undefined')
         }
