@@ -96,6 +96,8 @@ export default class LambdaRestService {
 
     let failures = this.failures;
 
+    console.log("Failure count captured", failures)
+
     if (global.browser.options.mochaOpts && global.browser.options.mochaOpts.bail && Boolean(result)) {
       failures = 1;
     }
@@ -103,16 +105,16 @@ export default class LambdaRestService {
     if (result === 0) {
       failures = 0;
     }
-    const status = 'status: ' + (failures > 0 ? 'failed' : 'passed');
+    const status = 'status: ' + (result > 0 ? 'failed' : 'passed');
 
     if (!global.browser.isMultiremote) {
       log.info(`Update job with sessionId ${global.browser.sessionId}, ${status}`);
-      return this._update(global.browser.sessionId, failures);
+      return this._update(global.browser.sessionId, result);
     }
 
     return Promise.all(Object.keys(this.capabilities).map(browserName => {
       log.info(`Update multiremote job for browser '${browserName}' and sessionId ${global.browser[browserName].sessionId}, ${status}`);
-      return this._update(global.browser[browserName].sessionId, failures, false, browserName);
+      return this._update(global.browser[browserName].sessionId, result, false, browserName);
     }));
   }
 
