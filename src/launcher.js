@@ -1,9 +1,14 @@
 import { performance, PerformanceObserver } from 'perf_hooks'
 import logger from '@wdio/logger'
 import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
-import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants'
+import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants.js'
+
 const log = logger('@wdio/lambdatest-service')
+
 export default class LambdaTestLauncher {
+    lambdatestTunnelProcess
+    options
+
     constructor(options) {
         this.options = options
     }
@@ -47,9 +52,12 @@ export default class LambdaTestLauncher {
         let timer
         performance.mark('ltTunnelStart')
         return Promise.race([
-            new Promise((resolve, reject) => {
+            /** @type {Promise<void>} */(new Promise((resolve, reject) => {
                 this.lambdatestTunnelProcess.start(tunnelArguments, err => {
-                    if (err) return reject(err)
+                    if (err) {
+                        obs.disconnect()
+                        return reject(err)
+                    }
                     /* istanbul ignore next */
                     this.lambdatestTunnelProcess.getTunnelName(tunnelName => {
                         if (Array.isArray(capabilities)) {
@@ -65,13 +73,17 @@ export default class LambdaTestLauncher {
                             else
                                 capabilities['LT:Options'].tunnelName = tunnelName
                         }
+                        obs.disconnect()
                         resolve()
                     })
                 })
-            }),
+            })),
             new Promise((resolve, reject) => {
                 /* istanbul ignore next */
-                timer = setTimeout(() => { reject( new Error(TUNNEL_START_FAILED)) }, TUNNEL_STOP_TIMEOUT)
+                timer = setTimeout(() => {
+                    obs.disconnect()
+                    reject(new Error(TUNNEL_START_FAILED))
+                }, TUNNEL_STOP_TIMEOUT)
             })
         ]).then(
             /* istanbul ignore next */
@@ -79,10 +91,12 @@ export default class LambdaTestLauncher {
                 clearTimeout(timer)
                 performance.mark('ltTunnelEnd')
                 performance.measure('bootTime', 'ltTunnelStart', 'ltTunnelEnd')
+                obs.disconnect()
                 return Promise.resolve(result)
             },
             (err) => {
                 clearTimeout(timer)
+                obs.disconnect()
                 return Promise.reject(err)
             }
         )

@@ -1,6 +1,6 @@
 {
   "name": "wdio-lambdatest-service",
-  "version": "1.0.17",
+  "version": "2.0.0",
   "description": "A WebdriverIO service that manages tunnel and job metadata for LambdaTest.",
   "author": "LambdaTest <keys@lambdatest.com>",
   "contributors": [
@@ -12,17 +12,29 @@
     "url": "git://github.com/LambdaTest/wdio-lambdatest-service.git"
   },
   "license": "MIT",
-  "main": "./build/index",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build",
+    "README.md",
+    "package.json"
+  ],
   "engines": {
     "node": ">=10.0.0"
   },
   "scripts": {
     "build": "run-s clean compile",
-    "clean": "rimraf ./build",
+    "clean": "run-s clean:*",
+    "clean:build": "rimraf ./build",
+    "clean:logs": "rimraf *.log",
+    "clean:test-artifacts": "rimraf .lambdatest",
     "compile": "babel src/ -d build/ --config-file ./babel.config.js",
+    "lint:staged": "git diff-index --cached --name-only --diff-filter=d HEAD | grep -E \".*\\.[cm]?js$\" | xargs -r node_modules/eslint/bin/eslint.js",
+    "prepare": "run-s build",
+    "postbuild": "cp src/*.d.ts build/",
     "test": "run-s test:*",
-    "test:eslint": "eslint --cache src tests",
-    "test:coverage": "jest --coverage --watchAll=false || exit 0"
+    "test:eslint": "eslint --cache src",
+    "test:unit": "vitest --coverage"
   },
   "keywords": [
     "webdriver",
@@ -34,13 +46,15 @@
     "url": "https://github.com/LambdaTest/wdio-lambdatest-service/issues"
   },
   "dependencies": {
-    "@lambdatest/node-rest-client": "^1.0.3",
+    "@lambdatest/node-rest-client": "^1.0.5",
     "@lambdatest/node-tunnel": "^4.0.1",
-    "@wdio/logger": "6.0.0-alpha.0",
-    "source-map-support": "^0.5.16"
+    "@wdio/logger": "^7.0.0",
+    "source-map-support": "^0.5.21"
   },
   "peerDependencies": {
-    "@wdio/cli": "^7.0.0"
+    "@wdio/cli": "^7.0.0 || ^8.0.0",
+    "@wdio/types": "^7.0.0 || ^8.0.0",
+    "webdriverio": "^7.0.0 || ^8.0.0"
   },
   "publishConfig": {
     "access": "public"
@@ -56,10 +70,9 @@
     "@babel/preset-env": "^7.6.2",
     "@babel/register": "^7.6.2",
     "@octokit/rest": "^16.35.2",
-    "@types/jest": "^24.0.18",
+    "@vitest/coverage-c8": "^0.27.1",
     "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.3",
-    "babel-jest": "^24.9.0",
     "babel-plugin-source-map-support": "^2.1.1",
     "codecov": "^3.6.1",
     "copyfiles": "^2.1.1",
@@ -67,42 +80,26 @@
     "eslint": "^6.5.1",
     "eslint-plugin-import": "^2.18.2",
     "husky": "^3.0.7",
-    "jest": "^24.9.0",
     "mime-types": "^2.1.24",
     "npm-run-all": "^4.1.5",
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.0",
     "tempy": "^0.3.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "vitest": "^0.27.1"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "git diff-index --name-only --diff-filter=d HEAD | grep -E \"(.*)\\.js$\" | xargs node_modules/eslint/bin/eslint.js -c .eslintrc.js",
+      "pre-commit": "npm run lint:staged",
       "pre-push": "npm run test:eslint"
     }
-  },
-  "jest": {
-    "testMatch": [
-      "<rootDir>/tests/*.test.js"
-    ],
-    "coverageDirectory": "./coverage/",
-    "collectCoverage": true,
-    "coverageThreshold": {
-      "global": {
-        "branches": 80,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
-      }
-    },
-    "testEnvironment": "node",
-    "coveragePathIgnorePatterns": [
-      "node_modules/"
-    ]
   },
   "greenkeeper": {
     "lockfiles": {
       "outOfRangeUpdatesOnly": true
     }
+  },
+  "directories": {
+    "test": "tests"
   }
 }
