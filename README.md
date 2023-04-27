@@ -34,7 +34,7 @@ exports.config = {
 };
 ```
 ### To upload app from local or url
-Upload android or ios apps from local or hosted app url by adding this following required configuration in your `wdio.conf.js`. To use the uploaded app for testing along in the same run set `enableCapability = true` , this will set the app url value in the capability.
+Upload `android` or `ios` apps from local or hosted app url by adding this required configuration in your `wdio.conf.js`. To use the uploaded app for testing along in the same run set `enableCapability = true` , this will set the app url value in the capabilities.
 
 ```js
 // wdio.conf.js
