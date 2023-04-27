@@ -49,7 +49,7 @@ services: [
             app_path : "/path/to/your/app/file", //provide the local app location
             // or
             app_url : "https://example.test_android.apk", //provide the url where your app is horsted or stored
-            custom_id : "12345" //provide your desired custom id
+            custom_id : "12345", //provide your desired custom id
             enableCapability : true
         }
     }
