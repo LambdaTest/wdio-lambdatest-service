@@ -1,10 +1,13 @@
+import FormData from 'form-data';
+import fs from 'fs';
+import axios from 'axios';
+
 import { performance, PerformanceObserver } from 'perf_hooks'
 import logger from '@wdio/logger'
 import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
 import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants.js'
-
 const log = logger('@wdio/lambdatest-service')
-
+const colors = require('colors');
 export default class LambdaTestLauncher {
     lambdatestTunnelProcess
     options
@@ -14,7 +17,53 @@ export default class LambdaTestLauncher {
     }
 
     // modify config and launch tunnel
-    onPrepare(config, capabilities) {
+    async onPrepare(config, capabilities) {
+
+        if (this.options.app_upload) {
+            try {
+              const appName = this.options.app?.app_name;
+              if (!appName) throw new Error(colors.yellow('App name is missing.\n'));
+              
+              const appPath = this.options.app?.app_path ?? null;
+              const appUrl = this.options.app?.app_url ?? null;
+              const customId = this.options.app?.custom_id ?? null;
+            
+              let data = new FormData();
+              data.append('name', appName);
+            
+              data.append(appPath !== null ? 'appFile' : 'url', appPath !== null ? fs.createReadStream(appPath) : appUrl);
+            
+              data.append('custom_id', customId);
+            
+              let headerEnv = `Basic ${Buffer.from(config.user + ':' + config.key).toString('base64')}`;
+              let body = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: 'https://manual-api.lambdatest.com/app/upload/realDevice',
+                headers: {
+                  'Authorization': headerEnv,
+                  ...data.getHeaders()
+                },
+                data: data
+              };
+
+              const response = await axios.request(body);
+              console.log(colors.green(JSON.stringify(response.data)));
+            
+              const envAppUrl = response.data.app_url;
+              if(this.options.app.enableCapability)
+              {
+                for (let i = 0; i < capabilities.length; i++) {
+                    capabilities[i].app = envAppUrl;
+                }
+                
+            }
+
+        } catch (error) {
+            console.error(error.message);
+            }
+        }
+
         if (!this.options.tunnel) {
             return
         }

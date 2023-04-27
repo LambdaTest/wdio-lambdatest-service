@@ -33,6 +33,29 @@ exports.config = {
     // ...
 };
 ```
+### To upload app from local or url
+Upload android or ios apps from local or hosted app url by adding this following required configuration in your `wdio.conf.js`. To use the uploaded app for testing along in the same run set `enableCapability = true` , this will set the app url value in the capability.
+
+```js
+// wdio.conf.js
+services: [
+    [
+        "lambdatest",
+        {
+        tunnel: true,
+        app_upload: true, 
+        app:{
+            app_name : "xyz", //provide your desired app name
+            app_path : "/path/to/your/app/file", //provide the local app location
+            // or
+            app_url : "https://example.test_android.apk", //provide the url where your app is horsted or stored
+            custom_id : "12345" //provide your desired custom id
+            enableCapability : true
+        }
+    }
+    ]
+]
+```
 
 ## Options
 
