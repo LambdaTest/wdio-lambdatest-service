@@ -56,7 +56,11 @@ export default class LambdaTestLauncher {
                 for (let i = 0; i < capabilities.length; i++) {
                     capabilities[i].app = envAppUrl;
                 }
-                
+            }
+            const appId = response.data.app_id;
+            if(appPath.includes('.apk'))
+            {
+                await checkPatchUrl(appId, headerEnv);
             }
 
         } catch (error) {
@@ -183,5 +187,35 @@ export default class LambdaTestLauncher {
                 return Promise.reject(err)
             }
         )
+    }
+
+}
+
+async function checkPatchUrl(appId, headerEnv) {
+    console.log
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://manual-api.lambdatest.com/app/${appId}/url?reinstall=true`,
+        headers: { 
+          'Authorization': headerEnv
+        }
+      };
+    while (true) {
+        try {
+        const response = await axios.request(config);
+        const { patched_url } = response.data;
+
+        if (patched_url !== null) {
+            break;
+        }
+
+        console.log('Waiting for app to be loaded...');
+        } catch (error) {
+        console.error('Error occurred:', error.message);
+        }
+
+        // Wait for 15 seconds before making the next request
+        await new Promise(resolve => setTimeout(resolve, 15000));
     }
 }
