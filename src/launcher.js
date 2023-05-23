@@ -201,13 +201,14 @@ async function checkPatchUrl(appId, headerEnv) {
           'Authorization': headerEnv
         }
       };
-    /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
-    while (true) {
+    let isLoaded = false;
+    while (!isLoaded) {
         try {
         const response = await axios.request(config);
         const patchedUrl = response.data.patched_url;
 
         if (patchedUrl !== null) {
+            isLoaded = true;
             break;
         }
 
