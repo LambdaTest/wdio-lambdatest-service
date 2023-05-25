@@ -106,7 +106,7 @@ export default class LambdaRestService {
     if (test.fullName) {
       // For Jasmine, `suite.title` is `Jasmine__TopLevel__Suite`.
       // This tweak allows us to set the real suite name.
-      const testSuiteName = test.fullName.slice(0, test.fullName.indexOf(test.description || '') - 1);
+      const testSuiteName = test.fullName;
       if (this._suiteTitle === 'Jasmine__TopLevel__Suite') {
         suiteTitle = testSuiteName;
       } else if (this._suiteTitle) {
