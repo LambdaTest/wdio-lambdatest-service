@@ -58,7 +58,7 @@ export default class LambdaTestLauncher {
                 }
             }
             const appId = response.data.app_id;
-            if(appPath.includes('.apk'))
+            if((appPath && appPath.includes('.apk')) || (appUrl && appUrl.includes('.apk')))
             {
                 await checkPatchUrl(appId, headerEnv);
             }
