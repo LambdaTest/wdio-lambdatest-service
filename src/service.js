@@ -264,7 +264,7 @@ export default class LambdaRestService {
   async updateJob(sessionId, _failures, calledOnReload = false, browserName) {
     const body = this.getBody(_failures, calledOnReload, browserName);
     try {
-      if(process.env.LT_ERROR_REMARK === "true")
+      if(process.env.LT_ERROR_REMARK === "true" && this._error !== null && this._error !== undefined)
       {
       await this._setSessionRemarks(this._error);
       }
