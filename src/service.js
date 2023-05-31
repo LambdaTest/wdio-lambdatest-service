@@ -27,6 +27,7 @@ export default class LambdaRestService {
   _suiteTitle;
   _testCnt = 0;
   _testTitle;
+  _error;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -106,7 +107,7 @@ export default class LambdaRestService {
     if (test.fullName) {
       // For Jasmine, `suite.title` is `Jasmine__TopLevel__Suite`.
       // This tweak allows us to set the real suite name.
-      const testSuiteName = test.fullName.slice(0, test.fullName.indexOf(test.description || '') - 1);
+      const testSuiteName = test.fullName;
       if (this._suiteTitle === 'Jasmine__TopLevel__Suite') {
         suiteTitle = testSuiteName;
       } else if (this._suiteTitle) {
@@ -166,6 +167,7 @@ export default class LambdaRestService {
     if (!passed && !isJasminePendingError) {
       ++this._failures;
       this._failReasons.push((error && error.message) || 'Unknown Error')
+      this._error=error.message || 'Unknown Error';
     }
   }
 
@@ -262,6 +264,11 @@ export default class LambdaRestService {
   async updateJob(sessionId, _failures, calledOnReload = false, browserName) {
     const body = this.getBody(_failures, calledOnReload, browserName);
     try {
+      if(process.env.LT_ERROR_REMARK === "true" && this._error !== null && this._error !== undefined)
+      {
+      await this._setSessionRemarks(this._error);
+      }
+      
       await new Promise((resolve, reject) => {
         if (!this._api) {
           return reject(new Error('LambdaTest service is not enabled'));
@@ -336,6 +343,17 @@ export default class LambdaRestService {
       this.__fullTitle = name;
       await this._setSessionName(name);
     }
+  }
+
+  async _setSessionRemarks(err){
+    let replacedString = err.replace(/"/g, "'");
+    let errorCustom =`lambda-hook: {"action": "setTestStatus","arguments": {"status":"failed","remark":"${replacedString}"}}`;
+    console.log(errorCustom);
+    try {
+      await this._browser.execute(errorCustom);
+    } catch (error) {
+      console.log(error)
+    } 
   }
 
   async _setSessionName(sessionName) {
