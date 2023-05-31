@@ -192,7 +192,6 @@ export default class LambdaTestLauncher {
 }
 
 async function checkPatchUrl(appId, headerEnv) {
-    console.log
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
