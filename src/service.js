@@ -28,6 +28,7 @@ export default class LambdaRestService {
   _testCnt = 0;
   _testTitle;
   _error;
+  _ltErrorRemark;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -63,6 +64,10 @@ export default class LambdaRestService {
 
     if (this._config.logFile) {
       lambdaCredentials.logFile = this._config.logFile;
+    }
+    if(this._config.ltErrorRemark ===true)
+    {
+      this._ltErrorRemark=true;
     }
 
     this._isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
@@ -264,7 +269,7 @@ export default class LambdaRestService {
   async updateJob(sessionId, _failures, calledOnReload = false, browserName) {
     const body = this.getBody(_failures, calledOnReload, browserName);
     try {
-      if(process.env.LT_ERROR_REMARK === "true" && this._error !== null && this._error !== undefined)
+      if(this._ltErrorRemark && this._error !== null && this._error !== undefined)
       {
       await this._setSessionRemarks(this._error);
       }
@@ -348,7 +353,6 @@ export default class LambdaRestService {
   async _setSessionRemarks(err){
     let replacedString = err.replace(/"/g, "'");
     let errorCustom =`lambda-hook: {"action": "setTestStatus","arguments": {"status":"failed","remark":"${replacedString}"}}`;
-    console.log(errorCustom);
     try {
       await this._browser.execute(errorCustom);
     } catch (error) {
