@@ -41,7 +41,9 @@ export async function updateSessionById(sessionId, data, lambdaCredentials){
     };
     try {
         let response = await axios.request(config);
-        console.log(response.data);
+        if (process.env.LT_CLIENT_LOG === "true"){
+            console.log(response);
+        }
       } catch (error) {
         console.error(error);
       }
