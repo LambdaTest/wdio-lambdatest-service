@@ -1,6 +1,6 @@
 {
   "name": "wdio-lambdatest-service",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A WebdriverIO service that manages tunnel and job metadata for LambdaTest.",
   "author": "LambdaTest <keys@lambdatest.com>",
   "contributors": [
@@ -46,10 +46,10 @@
     "url": "https://github.com/LambdaTest/wdio-lambdatest-service/issues"
   },
   "dependencies": {
-    "@lambdatest/node-rest-client": "^1.0.5",
     "@lambdatest/node-tunnel": "^4.0.1",
     "@wdio/logger": "^7.0.0",
     "colors": "^1.4.0",
+    "form-data": "^4.0.0",
     "source-map-support": "^0.5.21"
   },
   "peerDependencies": {

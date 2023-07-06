@@ -1,7 +1,6 @@
-import LambdaRestClient from '@lambdatest/node-rest-client'
 import logger from '@wdio/logger'
 
-import { getParentSuiteName } from './util.js'
+import { getParentSuiteName, updateSessionById } from './util.js'
 
 const log = logger('@wdio/lambdatest-service')
 
@@ -29,6 +28,7 @@ export default class LambdaRestService {
   _testTitle;
   _error;
   _ltErrorRemark;
+  _lambdaCredentials;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -71,12 +71,8 @@ export default class LambdaRestService {
     }
 
     this._isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
-
-    try {
-      this._api = LambdaRestClient.AutomationClient(lambdaCredentials);
-    } catch (_) {
-      this._isServiceEnabled = false;
-    }
+    this._lambdaCredentials=lambdaCredentials;
+    
   }
 
   async beforeScenario(world, context) {
@@ -273,18 +269,7 @@ export default class LambdaRestService {
       {
       await this._setSessionRemarks(this._error);
       }
-      
-      await new Promise((resolve, reject) => {
-        if (!this._api) {
-          return reject(new Error('LambdaTest service is not enabled'));
-        }
-        this._api.updateSessionById(sessionId, body, (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(result);
-        });
-      });
+      await updateSessionById(sessionId, body, this._lambdaCredentials);
     } catch (ex) {
       console.log(ex);
     }

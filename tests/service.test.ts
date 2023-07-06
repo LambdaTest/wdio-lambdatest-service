@@ -1,12 +1,12 @@
 import path from 'path'
-import request from 'request'
+
 import { describe, expect, it, test, vi } from 'vitest'
 import LambdaTestService from '../src/service.js'
 
 process.env.LT_USERNAME = process.env.LT_USERNAME ?? 'foo'
 process.env.LT_ACCESS_KEY = process.env.LT_ACCESS_KEY ?? 'bar'
 
-vi.mock('request')
+
 vi.mock('@wdio/logger', () => import(path.join(process.cwd(), '__mocks__', '@wdio/logger')))
 
 const browser = {
