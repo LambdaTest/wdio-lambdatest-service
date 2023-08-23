@@ -240,7 +240,7 @@ export default class LambdaRestService {
       return;
     }
 
-    const status = 'status: ' + (this._failures > 0 ? 'failed' : 'passed');
+    const status = (this._failures > 0 ? 'failed' : 'passed');
 
     if (!this._browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
@@ -356,7 +356,7 @@ export default class LambdaRestService {
         console.log(testCnt);
       }
     }
-    body.status_ind = status > 0 ? 'failed' : 'passed';
+    body.status_ind = status;
     return body;
 
   }
