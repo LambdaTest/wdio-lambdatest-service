@@ -29,6 +29,7 @@ export default class LambdaRestService {
   _error;
   _ltErrorRemark;
   _lambdaCredentials;
+  _currrentTestTitle;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -98,6 +99,9 @@ export default class LambdaRestService {
     if (!this._isServiceEnabled) {
       return;
     }
+
+    this._currrentTestTitle = test?.parent;
+    this._currrentTestTitle = this._currrentTestTitle + " - " + test?.title;
 
     if (test.title && !this._testTitle) {
       this._testTitle = test.title;
@@ -240,7 +244,9 @@ export default class LambdaRestService {
 
     if (!this._browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
-      await this._update(oldSessionId, this._failures, true);
+
+      await this._updateOnReload(oldSessionId, this._currrentTestTitle, status, true);
+
     } else {
       const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
       log.info(`Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`);
@@ -262,8 +268,31 @@ export default class LambdaRestService {
     return await this.updateJob(sessionId, failures, calledOnReload, browserName);
   }
 
+  async _updateOnReload(sessionId, fullTitle, status, calledOnReload = false, browserName) {
+    if (!this._options.setSessionStatus) {
+      return;
+    }
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    await sleep(5000);
+    return await this.updateJobOnReload(sessionId, fullTitle, status, calledOnReload, browserName);
+  }
+
   async updateJob(sessionId, _failures, calledOnReload = false, browserName) {
     const body = this.getBody(_failures, calledOnReload, browserName);
+    try {
+      if(this._ltErrorRemark && this._error !== null && this._error !== undefined)
+      {
+      await this._setSessionRemarks(this._error);
+      }
+      await updateSessionById(sessionId, body, this._lambdaCredentials);
+    } catch (ex) {
+      console.log(ex);
+    }
+    this._failures = 0;
+  }
+
+  async updateJobOnReload(sessionId, fullTitle, status, calledOnReload = false, browserName) {
+    const body = this.getBodyOnReload(fullTitle, status, calledOnReload, browserName);
     try {
       if(this._ltErrorRemark && this._error !== null && this._error !== undefined)
       {
@@ -307,6 +336,29 @@ export default class LambdaRestService {
     }
     body.status_ind = _failures > 0 ? 'failed' : 'passed';
     return body;
+  }
+
+  getBodyOnReload(fullTitle, status, calledOnReload = false, browserName) {
+    let body = {};
+    if (!(!this._browser.isMultiremote && this._capabilities.name || this._browser.isMultiremote && this._capabilities[browserName].capabilities.name)) {
+      body.name = fullTitle;
+      if (this._capabilities['LT:Options'] && this._capabilities['LT:Options'].name) {
+        body.name = this._capabilities['LT:Options'].name;
+      }
+      if (browserName) {
+        body.name = `${browserName}: ${body.name}`;
+      }
+      if (calledOnReload || this._testCnt) {
+        let testCnt = ++this._testCnt;
+        if (this._browser.isMultiremote) {
+          testCnt = Math.ceil(testCnt / this._browser.instances.length);
+        }
+        console.log(testCnt);
+      }
+    }
+    body.status_ind = status > 0 ? 'failed' : 'passed';
+    return body;
+
   }
 
   async setSessionName(suiteTitle, test) {
