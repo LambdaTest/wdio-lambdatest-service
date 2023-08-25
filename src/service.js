@@ -101,7 +101,7 @@ export default class LambdaRestService {
     }
 
     this._currrentTestTitle = test?.parent;
-    this._currrentTestTitle = this._currrentTestTitle + " - " + test?.title;
+    this._currrentTestTitle = `${this._currrentTestTitle} - ${test?.title}`;
 
     if (test.title && !this._testTitle) {
       this._testTitle = test.title;
