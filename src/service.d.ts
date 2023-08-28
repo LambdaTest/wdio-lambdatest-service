@@ -18,6 +18,7 @@ export default class LambdaRestService implements Services.ServiceInstance {
     private _suiteTitle?;
     private _testCnt;
     private _testTitle?;
+    private  _currrentTestTitle;
 
     constructor(options: LTOptions & SessionNameOptions, capabilities: Capabilities.RemoteCapability, config: Options.Testrunner);
     before(caps: Capabilities.RemoteCapability, specs: string[], browser: Browser<'async'> | MultiRemoteBrowser<'async'>): Promise<void>;
@@ -54,9 +55,9 @@ export default class LambdaRestService implements Services.ServiceInstance {
     afterScenario(world: Frameworks.World, result: Frameworks.TestResult): void;
     after(result: number): Promise<void>;
     onReload(oldSessionId: string, newSessionId: string): Promise<void>;
-    _update(sessionId: string, failures: number, calledOnReload?: boolean, browserName?: string): Promise<void>;
-    updateJob(sessionId: string, failures: number, calledOnReload?: boolean, browserName?: string): Promise<void>;
-    getBody(failures: number, calledOnReload?: boolean, browserName?: string): { name: string; status_ind: string; }
+    _update(sessionId: string, fullTitle: string, status: string, failures: number, calledOnReload?: boolean, browserName?: string): Promise<void>;
+    updateJob(sessionId: string, fullTitle: string, status: string, failures: number, calledOnReload?: boolean, browserName?: string): Promise<void>;
+    getBody(fullTitle: string, status: string, failures: number, calledOnReload?: boolean, browserName?: string): { name: string; status_ind: string; }
     setSessionName(suiteTitle: string, test: Frameworks.Test): Promise<void>;
     _setSessionName(sessionName: string): Promise<void>;
     _executeCommand(cmd: string): Promise<void>;
