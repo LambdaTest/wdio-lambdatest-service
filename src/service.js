@@ -29,7 +29,7 @@ export default class LambdaRestService {
   _error;
   _ltErrorRemark;
   _lambdaCredentials;
-  _currrentTestTitle;
+  _currentTestTitle;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -100,8 +100,12 @@ export default class LambdaRestService {
       return;
     }
 
-    this._currrentTestTitle = test?.parent;
-    this._currrentTestTitle = `${this._currrentTestTitle} - ${test?.title}`;
+    if (test && test?.parent !== undefined) {
+      this._currentTestTitle = test?.parent;
+      this._currentTestTitle = `${this._currentTestTitle} - ${test?.title}`;
+  } else if (test && test?.fullName !== undefined) {
+      this._currentTestTitle = test?.fullName;
+  }
 
     if (test.title && !this._testTitle) {
       this._testTitle = test.title;
@@ -245,7 +249,7 @@ export default class LambdaRestService {
     if (!this._browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
 
-      await this._update({ sessionId: oldSessionId, fullTitle: this._currrentTestTitle, status: status, calledOnReload: true });
+      await this._update({ sessionId: oldSessionId, fullTitle: this._currentTestTitle, status: status, calledOnReload: true });
 
     } else {
       const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
