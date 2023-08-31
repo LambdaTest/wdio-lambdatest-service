@@ -177,6 +177,9 @@ export default class LambdaRestService {
       ++this._failures;
       this._failReasons.push((error && error.message) || 'Unknown Error')
       this._error=error.message || 'Unknown Error';
+      if (this._ltErrorRemark && this._error !== null && this._error !== undefined) {
+        this._setSessionRemarks(this._error);
+      }
     }
   }
 
@@ -283,10 +286,6 @@ export default class LambdaRestService {
        body = this.getBody({ fullTitle, status, calledOnReload, browserName });
     }
     try {
-      if(this._ltErrorRemark && this._error !== null && this._error !== undefined)
-      {
-      await this._setSessionRemarks(this._error);
-      }
       await updateSessionById(sessionId, body, this._lambdaCredentials);
     } catch (ex) {
       console.log(ex);
