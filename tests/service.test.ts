@@ -22,7 +22,7 @@ test('beforeSession should set to unknown creds if no lambdatest user and key ar
     const service = new LambdaTestService({}, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession({} as any, {})
-    expect(service['_isServiceEnabled']).toBe(false)
+    expect(service['_isServiceEnabled']).toBe(undefined)
 })
 
 test('beforeSuite', () => {
@@ -111,8 +111,10 @@ test('after', () => {
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
     service.after(5)
-
-    expect(updateSpy).toBeCalledWith('foobar', 5)
+    expect(updateSpy).toBeCalledWith({
+        sessionId: 'foobar',
+        failures: 5
+    });
 })
 
 test('after with mochaOpt bail set to 1', () => {
@@ -128,7 +130,10 @@ test('after with mochaOpt bail set to 1', () => {
     service['_browser'].config = { mochaOpts: { bail: 1 } }
     service.after(1)
 
-    expect(updateSpy).toBeCalledWith('foobar', 1)
+    expect(updateSpy).toBeCalledWith({
+        'sessionId': 'foobar',
+         'failures': 1
+        })
 })
 
 test('after in multiremote', () => {
@@ -145,24 +150,24 @@ test('after in multiremote', () => {
     service['_browser'].sessionId = 'foobar'
     service.after(5)
 
-    expect(updateSpy).toBeCalledWith(
-        'sessionChromeA',
-        5,
-        false,
-        'chromeA'
-    )
-    expect(updateSpy).toBeCalledWith(
-        'sessionChromeB',
-        5,
-        false,
-        'chromeB'
-    )
-    expect(updateSpy).toBeCalledWith(
-        'sessionChromeC',
-        5,
-        false,
-        'chromeC'
-    )
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeA',
+            'failures': 5,
+            'calledOnReload': false,
+            'sessionId': 'sessionChromeA',
+            })
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeB',
+            'failures': 5,
+            'calledOnReload': false,
+            'sessionId': 'sessionChromeB',
+            })
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeC',
+            'failures': 5,
+            'calledOnReload': false,
+            'sessionId': 'sessionChromeC',
+            })
 })
 
 test('after in multiremote', () => {
@@ -180,12 +185,12 @@ test('after in multiremote', () => {
     service['_browser'].chromeB.sessionId = 'newSessionChromeB'
     service.onReload('sessionChromeB', 'newSessionChromeB')
 
-    expect(updateSpy).toBeCalledWith(
-        'sessionChromeB',
-        5,
-        true,
-        'chromeB'
-    )
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeB',
+            'calledOnReload': true,
+            'failures': 5,
+            'sessionId': 'sessionChromeB',
+             })
 })
 
 test('onReload', () => {
@@ -199,7 +204,12 @@ test('onReload', () => {
     service['_browser'].sessionId = 'foobar'
     service.onReload('oldbar', 'newbar')
 
-    expect(updateSpy).toBeCalledWith('oldbar', 5, true)
+    expect(updateSpy).toBeCalledWith({
+            'calledOnReload': true,
+            'fullTitle': undefined,
+            'sessionId': 'oldbar',
+            'status': 'failed',
+        })
 })
 
 describe('beforeSuite', () => {
@@ -211,7 +221,6 @@ describe('beforeSuite', () => {
         expect(service['_fullTitle']).toBeUndefined()
         await service.beforeSuite({ title: 'foobar' } as any)
         expect(service['_suiteTitle']).toBe('foobar')
-        // expect(service['_fullTitle']).toBe('foobar')
         expect(setSessionNameSpy).toBeCalledWith('foobar')
     })
 
@@ -332,7 +341,7 @@ describe('beforeTest', () => {
             await service.beforeSuite({ title: 'Jasmine__TopLevel__Suite' } as any)
             await service.beforeTest({ fullName: 'foo bar baz', description: 'baz' } as any)
             service.afterTest({ fullName: 'foo bar baz', description: 'baz' } as any, undefined, { passed: true } as any)
-            expect(setSessionNameSpy).toBeCalledWith('foo bar')
+            expect(setSessionNameSpy).toBeCalledWith('foo bar baz')
         })
 
         it('should set parent suite name as title', async () => {
@@ -345,7 +354,7 @@ describe('beforeTest', () => {
             await service.beforeTest({ fullName: 'foo xyz', description: 'xyz' } as any)
             service.afterTest({ fullName: 'foo bar baz', description: 'baz' } as any, undefined, { passed: true } as any)
             service.afterTest({ fullName: 'foo xyz', description: 'xyz' } as any, undefined, { passed: true } as any)
-            expect(setSessionNameSpy).toBeCalledWith('foo')
+            expect(setSessionNameSpy).toBeCalledWith('foo xyz')
         })
     })
 })

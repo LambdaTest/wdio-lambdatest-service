@@ -176,7 +176,7 @@ export default class LambdaRestService {
     if (!passed && !isJasminePendingError) {
       ++this._failures;
       this._failReasons.push((error && error.message) || 'Unknown Error')
-      this._error=error.message || 'Unknown Error';
+      this._error=error?.message || 'Unknown Error';
       if (this._ltErrorRemark && this._error !== null && this._error !== undefined) {
         this._setSessionRemarks(this._error);
       }

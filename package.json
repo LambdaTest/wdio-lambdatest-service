@@ -1,6 +1,6 @@
 {
   "name": "wdio-lambdatest-service",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A WebdriverIO service that manages tunnel and job metadata for LambdaTest.",
   "author": "LambdaTest <keys@lambdatest.com>",
   "contributors": [
@@ -72,6 +72,7 @@
     "@babel/register": "^7.6.2",
     "@octokit/rest": "^16.35.2",
     "@vitest/coverage-c8": "^0.27.1",
+    "@vitest/coverage-v8": "^0.34.4",
     "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.3",
     "babel-plugin-source-map-support": "^2.1.1",
@@ -87,7 +88,7 @@
     "rimraf": "^3.0.0",
     "tempy": "^0.3.0",
     "typescript": "^3.6.3",
-    "vitest": "^0.27.1"
+    "vitest": "^0.34.4"
   },
   "husky": {
     "hooks": {
