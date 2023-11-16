@@ -82,16 +82,16 @@ export default class LambdaTestLauncher {
 
         if (Array.isArray(capabilities)) {
             capabilities.forEach(capability => {
-                if(capability['LT:Options']===undefined)
+                if(capability['LT:Options'] === undefined && capability['lt:options'] === undefined)
                     capability.tunnel = true
                 else
-                    capability['LT:Options'].tunnel = true
+                (capability['LT:Options'] || capability['lt:options']).tunnel = true
             })
         } else if (typeof capabilities === 'object') {
-            if(capabilities['LT:Options']===undefined)
+            if(capabilities['LT:Options'] === undefined && capabilities['lt:options'] === undefined)
                 capabilities.tunnel = true
             else
-                capabilities['LT:Options'].tunnel = true
+                (capabilities['LT:Options'] || capabilities['lt:options']).tunnel = true
         }
         // measure LT boot time
         const obs = new PerformanceObserver(list => {
@@ -115,16 +115,16 @@ export default class LambdaTestLauncher {
                     this.lambdatestTunnelProcess.getTunnelName(tunnelName => {
                         if (Array.isArray(capabilities)) {
                             capabilities.forEach(capability => {
-                                if(capability['LT:Options']===undefined)
+                                if(capability['LT:Options'] === undefined && capability['lt:options'] === undefined)
                                     capability.tunnelName = tunnelName
                                 else
-                                    capability['LT:Options'].tunnelName = tunnelName
+                                    (capability['LT:Options'] || capability['lt:options']).tunnelName = tunnelName
                             })
                         } else if (typeof capabilities === 'object') {
-                            if(capabilities['LT:Options']===undefined)
+                            if(capabilities['LT:Options'] === undefined && capabilities['lt:options'] === undefined)
                                 capabilities.tunnelName = tunnelName
                             else
-                                capabilities['LT:Options'].tunnelName = tunnelName
+                                (capabilities['LT:Options'] || capabilities['lt:options']).tunnelName = tunnelName
                         }
                         obs.disconnect()
                         resolve()
