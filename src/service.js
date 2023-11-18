@@ -7,7 +7,7 @@ const log = logger('@wdio/lambdatest-service')
 /** @type {import('./types.js').LTOptions & import('./types.js').SessionNameOptions} */
 const DEFAULT_OPTIONS = {
   setSessionName: true,
-  setSessionStatus: true
+  setSessionStatus: true,
 };
 
 export default class LambdaRestService {
@@ -28,6 +28,7 @@ export default class LambdaRestService {
   _testTitle;
   _error;
   _ltErrorRemark;
+  _useScenarioName;
   _lambdaCredentials;
   _currentTestTitle;
 
@@ -70,6 +71,11 @@ export default class LambdaRestService {
     {
       this._ltErrorRemark=true;
     }
+    // Cucumber specific option to set test name from scenario
+    if(this._config.useScenarioName === true)
+    {
+      this._useScenarioName=true;
+    }
 
     this._isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
     this._lambdaCredentials=lambdaCredentials;
@@ -77,14 +83,16 @@ export default class LambdaRestService {
   }
 
   async beforeScenario(world, context) {
-    if (!this._suiteTitle) {
+    if (this._useScenarioName) {
+      this._testTitle = world?.pickle?.name || 'unknown scenario';
+    } else if (!this._suiteTitle) {
       this._suiteTitle =
         world?.gherkinDocument?.feature?.name ||
         context?.document?.feature?.name ||
         world?.pickle?.name ||
         'unknown scenario';
-      await this.setSessionName(this._suiteTitle);
     }
+    await this.setSessionName(this._testTitle || this._suiteTitle);
   }
 
   async beforeSuite(suite) {
@@ -338,8 +346,7 @@ export default class LambdaRestService {
     if (!this._options.setSessionName || !suiteTitle) {
         return;
     }
-
-    let name = suiteTitle;
+    let name = this._useScenarioName && this._testTitle ? this._testTitle : suiteTitle;
     if (this._options.sessionNameFormat) {
       name = this._options.sessionNameFormat(
           this._config,
