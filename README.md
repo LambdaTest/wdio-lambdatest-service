@@ -116,6 +116,8 @@ Automatically set the session status (passed/failed).
 Type: `Boolean`<br />
 Default: `true`
 
+### useScenarioName
+To get test names as scenario names for cucumber specific tests, simply add `useScenarioName: true` in your `wdio.conf.js`.
 
 ## Steps to compile and publish
 1. git clone this repository.

@@ -82,12 +82,21 @@ export default class LambdaTestLauncher {
 
         if (Array.isArray(capabilities)) {
             capabilities.forEach(capability => {
+                if (capability['lt:options']) {
+                    capability['LT:Options'] = { ...capability['lt:options'] };
+                    delete capability['lt:options'];
+                }
                 if(capability['LT:Options']===undefined)
                     capability.tunnel = true
                 else
                     capability['LT:Options'].tunnel = true
             })
         } else if (typeof capabilities === 'object') {
+
+            if (capabilities['lt:options']) {
+                capabilities['LT:Options'] = { ...capabilities['lt:options'] };
+                delete capabilities['lt:options'];
+            }
             if(capabilities['LT:Options']===undefined)
                 capabilities.tunnel = true
             else
