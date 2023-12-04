@@ -25,7 +25,7 @@ exports.config = {
     user: process.env.LT_USERNAME,
     key: process.env.LT_ACCESS_KEY,
     logFile : './logDir/api.log',
-    product : 'appAutomation'
+    product : 'appAutomation',
     services: [
         ['lambdatest', {
             tunnel: true
