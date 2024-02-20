@@ -16,6 +16,26 @@ export default class LambdaTestLauncher {
         this.options = options
     }
 
+    configureCapabilities(capabilities, key, value) {
+        if (Array.isArray(capabilities)) {
+            capabilities.forEach(capability => {
+                if (capability['lt:options']) {
+                    capability['LT:Options'] = { ...capability['lt:options'] };
+                    delete capability['lt:options'];
+                }
+                if (capability['LT:Options'] === undefined) capability[key] = value;
+                else capability['LT:Options'][key] = value;
+            });
+        } else if (typeof capabilities === 'object') {
+            if (capabilities['lt:options']) {
+                capabilities['LT:Options'] = { ...capabilities['lt:options'] };
+                delete capabilities['lt:options'];
+            }
+            if (capabilities['LT:Options'] === undefined) capabilities[key] = value;
+            else capabilities['LT:Options'][key] = value;
+        }
+    }
+
     // modify config and launch tunnel
     async onPrepare(config, capabilities) {
 
@@ -33,7 +53,7 @@ export default class LambdaTestLauncher {
             
               data.append(appPath !== null ? 'appFile' : 'url', appPath !== null ? fs.createReadStream(appPath) : appUrl);
             
-              data.append('custom_id', customId);
+              if (customId !== null) data.append('custom_id', customId);
             
               let headerEnv = `Basic ${Buffer.from(config.user + ':' + config.key).toString('base64')}`;
               let body = {
@@ -51,11 +71,8 @@ export default class LambdaTestLauncher {
               console.log(colors.green(JSON.stringify(response.data)));
             
               const envAppUrl = response.data.app_url;
-              if(this.options.app.enableCapability)
-              {
-                for (let i = 0; i < capabilities.length; i++) {
-                    capabilities[i].app = envAppUrl;
-                }
+              if(this.options.app.enableCapability) {
+                this.configureCapabilities(capabilities, 'app', envAppUrl);
             }
             const appId = response.data.app_id;
             if((appPath && appPath.includes('.apk')) || (appUrl && appUrl.includes('.apk')))
@@ -80,28 +97,7 @@ export default class LambdaTestLauncher {
 
         this.lambdatestTunnelProcess = new LambdaTestTunnelLauncher()
 
-        if (Array.isArray(capabilities)) {
-            capabilities.forEach(capability => {
-                if (capability['lt:options']) {
-                    capability['LT:Options'] = { ...capability['lt:options'] };
-                    delete capability['lt:options'];
-                }
-                if(capability['LT:Options']===undefined)
-                    capability.tunnel = true
-                else
-                    capability['LT:Options'].tunnel = true
-            })
-        } else if (typeof capabilities === 'object') {
-
-            if (capabilities['lt:options']) {
-                capabilities['LT:Options'] = { ...capabilities['lt:options'] };
-                delete capabilities['lt:options'];
-            }
-            if(capabilities['LT:Options']===undefined)
-                capabilities.tunnel = true
-            else
-                capabilities['LT:Options'].tunnel = true
-        }
+        this.configureCapabilities(capabilities, 'tunnel', true);
         // measure LT boot time
         const obs = new PerformanceObserver(list => {
             const entry = list.getEntries()[0]
@@ -122,19 +118,9 @@ export default class LambdaTestLauncher {
                     }
                     /* istanbul ignore next */
                     this.lambdatestTunnelProcess.getTunnelName(tunnelName => {
-                        if (Array.isArray(capabilities)) {
-                            capabilities.forEach(capability => {
-                                if(capability['LT:Options']===undefined)
-                                    capability.tunnelName = tunnelName
-                                else
-                                    capability['LT:Options'].tunnelName = tunnelName
-                            })
-                        } else if (typeof capabilities === 'object') {
-                            if(capabilities['LT:Options']===undefined)
-                                capabilities.tunnelName = tunnelName
-                            else
-                                capabilities['LT:Options'].tunnelName = tunnelName
-                        }
+
+                        this.configureCapabilities(capabilities, 'tunnelName', tunnelName);
+                        
                         obs.disconnect()
                         resolve()
                     })
