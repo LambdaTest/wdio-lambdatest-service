@@ -1,6 +1,8 @@
 const axios = require('axios');
 const { version, appVersion, baseUrl, baseUrlApp } = require("./constants.js");
 
+const logger = require('./logger')(process.env.LT_API_LOG_FILE);
+
 /**
  * [Jasmine only] Get the parent suite name of a test
  * @param {string} fullTitle 
@@ -41,11 +43,8 @@ export async function updateSessionById(sessionId, data, lambdaCredentials){
     };
     try {
         let response = await axios.request(config);
-        if (process.env.LT_CLIENT_LOG === "true"){
-            console.log(response);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+        logger.info(response?.config?.data + response?.data);
+    } catch (error) {
+        logger.error(error); 
     }
-
+}

@@ -17,22 +17,22 @@ export default class LambdaTestLauncher {
     }
 
     configureCapabilities(capabilities, key, value) {
-        if (Array.isArray(capabilities)) {
-            capabilities.forEach(capability => {
-                if (capability['lt:options']) {
-                    capability['LT:Options'] = { ...capability['lt:options'] };
-                    delete capability['lt:options'];
-                }
-                if (capability['LT:Options'] === undefined) capability[key] = value;
-                else capability['LT:Options'][key] = value;
-            });
-        } else if (typeof capabilities === 'object') {
-            if (capabilities['lt:options']) {
-                capabilities['LT:Options'] = { ...capabilities['lt:options'] };
-                delete capabilities['lt:options'];
+        const updateCapability = (capability) => {
+            if (capability['lt:options']) {
+                capability['LT:Options'] = { ...capability['lt:options'] };
+                delete capability['lt:options'];
             }
-            if (capabilities['LT:Options'] === undefined) capabilities[key] = value;
-            else capabilities['LT:Options'][key] = value;
+            if (capability['LT:Options'] === undefined) {
+                capability[key] = value;
+            } else {
+                capability['LT:Options'][key] = value;
+            }
+        };
+    
+        if (Array.isArray(capabilities)) {
+            capabilities.forEach(updateCapability);
+        } else if (typeof capabilities === 'object') {
+            updateCapability(capabilities);
         }
     }
 
