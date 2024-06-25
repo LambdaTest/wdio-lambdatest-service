@@ -1,6 +1,7 @@
 import logger from '@wdio/logger'
 
 import { getParentSuiteName, updateSessionById } from './util.js'
+import { appSessionURL, webSessionURL } from './constants.js';
 
 const log = logger('@wdio/lambdatest-service')
 
@@ -415,8 +416,8 @@ export default class LambdaRestService {
 
   getSessionURL(sessionId, product) {
     if (product === 'appAutomation') {
-      return `https://appautomation.lambdatest.com/test?testID=${sessionId}`;
+      return `${appSessionURL}=${sessionId}`;
     }
-    return `https://automation.lambdatest.com/test?testID=${sessionId}`;
+    return `${webSessionURL}=${sessionId}`;
   }
 }

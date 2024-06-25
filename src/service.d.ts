@@ -61,4 +61,5 @@ export default class LambdaRestService implements Services.ServiceInstance {
     setSessionName(suiteTitle: string, test: Frameworks.Test): Promise<void>;
     _setSessionName(sessionName: string): Promise<void>;
     _executeCommand(cmd: string): Promise<void>;
+    getSessionURL(sessionId: string, product: string): string;
 }
