@@ -244,8 +244,10 @@ export default class LambdaRestService {
       log.info(`Update job with sessionId ${this._browser.sessionId}, ${status}`);
 
       // Print session URL for single remote browser
-      const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
-      log.info(`Session URL: ${sessionURL}`);
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
+        log.info(`Session URL: ${sessionURL}`);
+      }
 
       return this._update({ sessionId: this._browser.sessionId, failures: result });
     }
@@ -254,8 +256,10 @@ export default class LambdaRestService {
       log.info(`Update multiremote job for browser '${browserName}' and sessionId ${this._browser[browserName].sessionId}, ${status}`);
 
       // Print session URL for each remote browser
-      const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
-      log.info(`Session URL for ${browserName}: ${sessionURL}`);
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
+        log.info(`Session URL for ${browserName}: ${sessionURL}`);
+      }
 
       return this._update({ sessionId: this._browser[browserName].sessionId, failures: failures, calledOnReload: false, browserName: browserName });
     }));
@@ -272,8 +276,10 @@ export default class LambdaRestService {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
 
       // Print session URL for single remote browser
-      const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
-      log.info(`Session URL: ${sessionURL}`);
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
+        log.info(`Session URL: ${sessionURL}`);
+      }
 
       await this._update({ sessionId: oldSessionId, fullTitle: this._currentTestTitle, status: status, calledOnReload: true });
 
@@ -282,8 +288,10 @@ export default class LambdaRestService {
       log.info(`Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`);
 
       // Print session URL for each remote browser
-      const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
-      log.info(`Session URL for ${browserName}: ${sessionURL}`);
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
+        log.info(`Session URL for ${browserName}: ${sessionURL}`);
+      }
 
       await this._update({ sessionId : oldSessionId, failures:this._failures, calledOnReload: true, browserName: browserName });
     }
