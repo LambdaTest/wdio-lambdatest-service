@@ -1,6 +1,7 @@
 import logger from '@wdio/logger'
 
 import { getParentSuiteName, updateSessionById } from './util.js'
+import { appSessionURL, webSessionURL } from './constants.js';
 
 const log = logger('@wdio/lambdatest-service')
 
@@ -241,11 +242,25 @@ export default class LambdaRestService {
 
     if (!this._browser.isMultiremote) {
       log.info(`Update job with sessionId ${this._browser.sessionId}, ${status}`);
+
+      // Print session URL for single remote browser
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
+        log.info(`Session URL: ${sessionURL}`);
+      }
+
       return this._update({ sessionId: this._browser.sessionId, failures: result });
     }
 
     return Promise.all(Object.keys(this._capabilities).map(browserName => {
       log.info(`Update multiremote job for browser '${browserName}' and sessionId ${this._browser[browserName].sessionId}, ${status}`);
+
+      // Print session URL for each remote browser
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
+        log.info(`Session URL for ${browserName}: ${sessionURL}`);
+      }
+
       return this._update({ sessionId: this._browser[browserName].sessionId, failures: failures, calledOnReload: false, browserName: browserName });
     }));
   }
@@ -260,11 +275,24 @@ export default class LambdaRestService {
     if (!this._browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
 
+      // Print session URL for single remote browser
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
+        log.info(`Session URL: ${sessionURL}`);
+      }
+
       await this._update({ sessionId: oldSessionId, fullTitle: this._currentTestTitle, status: status, calledOnReload: true });
 
     } else {
       const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
       log.info(`Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`);
+
+      // Print session URL for each remote browser
+      if(process.env.LOG_SESSION_URL === "true") {
+        const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
+        log.info(`Session URL for ${browserName}: ${sessionURL}`);
+      }
+
       await this._update({ sessionId : oldSessionId, failures:this._failures, calledOnReload: true, browserName: browserName });
     }
 
@@ -392,5 +420,12 @@ export default class LambdaRestService {
       }));
     }
     return await this._browser.execute(cmd);
+  }
+
+  getSessionURL(sessionId, product) {
+    if (product === 'appAutomation') {
+      return `${appSessionURL}=${sessionId}`;
+    }
+    return `${webSessionURL}=${sessionId}`;
   }
 }

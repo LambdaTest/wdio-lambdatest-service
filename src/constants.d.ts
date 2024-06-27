@@ -15,5 +15,7 @@ declare module 'constants' {
   
     export const TUNNEL_STOP_FAILED: string;
     export const TUNNEL_START_FAILED: string;
+    export const appSessionURL: string;
+    export const webSessionURL: string;
   }
   
