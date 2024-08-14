@@ -395,14 +395,21 @@ export default class LambdaRestService {
     }
   }
 
-  async _setSessionRemarks(err){
-    let replacedString = err.replace(/"/g, "'");
-    let errorCustom =`lambda-hook: {"action": "setTestStatus","arguments": {"status":"failed","remark":"${replacedString}"}}`;
+  async _setSessionRemarks(err) {
     try {
+      const hookObject = {
+        action: "setTestStatus",
+        arguments: {
+          status: "failed",
+          remark: err
+        }
+      };
+  
+      const errorCustom = `lambda-hook: ${JSON.stringify(hookObject)}`;
       await this._browser.execute(errorCustom);
     } catch (error) {
-      console.log(error)
-    } 
+      console.log("Error setting session remarks:", error);
+    }
   }
 
   async _setSessionName(sessionName) {

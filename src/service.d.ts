@@ -19,6 +19,7 @@ export default class LambdaRestService implements Services.ServiceInstance {
     private _testCnt;
     private _testTitle?;
     private  _currrentTestTitle;
+    private _ltErrorRemark?: boolean;
 
     constructor(options: LTOptions & SessionNameOptions, capabilities: Capabilities.RemoteCapability, config: Options.Testrunner);
     before(caps: Capabilities.RemoteCapability, specs: string[], browser: Browser<'async'> | MultiRemoteBrowser<'async'>): Promise<void>;
@@ -62,4 +63,5 @@ export default class LambdaRestService implements Services.ServiceInstance {
     _setSessionName(sessionName: string): Promise<void>;
     _executeCommand(cmd: string): Promise<void>;
     getSessionURL(sessionId: string, product: string): string;
+    _setSessionRemarks(err: string): Promise<void>;
 }
