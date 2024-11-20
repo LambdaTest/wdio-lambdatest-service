@@ -74,10 +74,287 @@ Type: `Boolean`<br>
 Default: `false`
 
 ### lambdatestOpts
-Specified optional will be passed down to LambdaTest Tunnel. See [this list](https://www.lambdatest.com/support/docs/lambda-tunnel-modifiers/) for details.
+Specified optional will be passed down to LambdaTest Tunnel.
 
 Type: `Object`<br>
 Default: `{}`
+
+Given below is an comprehensive list of all options available:
+
+#### tunnelName
+Specifies the custom LambdaTest Tunnel name to be used.
+
+**Example:**
+```json
+{"tunnelName": "my_custom_tunnel"}
+```
+
+#### port
+Port for LambdaTest Tunnel to activate.
+
+**Example:**
+```json
+{"port": 33000}
+```
+#### user
+LambdaTest username.
+
+**Example:**
+```json
+{"user": "your_username"}
+```
+
+#### key
+LambdaTest accessKey.
+
+**Example:**
+```json
+{"key": "your_access_key"}
+```
+
+#### verbose
+Should every proxy request be logged to stdout.
+
+**Example:**
+```json
+{"verbose": true}
+```
+
+#### logFile
+Location of the LambdaTest Tunnel log file.
+
+**Example:**
+```json
+{"logFile": "/path/to/log/file"}
+```
+
+#### config
+
+Path of the config file to use.
+**Example:**
+```json
+{"config": "/path/to/config/file"}
+```
+
+#### dir
+Specify the local directory that will be served by a file server on Tunnel port.
+
+**Example:**
+```json
+{"dir": "/path/to/local/directory"}
+```
+
+
+#### proxyHost
+Specifies the Tunnel proxy port hostname.
+
+**Example:**
+```json
+{"proxyHost": "proxy.example.com"}
+```
+#### proxyUser
+Specifies the Tunnel proxy port username.
+
+**Example:**
+```json
+{"proxyUser": "your_proxy_username"}
+```
+
+#### proxyPass
+Specifies the Tunnel proxy port password.
+
+**Example:**
+```json
+{"proxyPass": "your_proxy_password"}
+```
+
+#### proxyPort
+Specifies the port number where Tunnel proxy will activate.
+
+**Example:**
+```json
+{"proxyPort": 8080}
+```
+
+#### egressOnly
+Uses proxy settings only for outbound requests.
+
+**Example:**
+```json
+{"egressOnly": true}
+```
+
+
+#### ingressOnly
+Routes only incoming traffic via the proxy specified.
+
+**Example:**
+```json
+{"ingressOnly": true}
+```
+
+
+#### pacfile
+To use PAC (Proxy Auto-Configuration) in local testing, provide
+path of a PAC file.
+
+**Example:**
+```json
+{"pacfile": "/path/to/pacfile"}
+```
+
+#### loadBalanced
+Activates [Load Balancing](https://www.lambdatest.com/support/docs/load-balancing-in-lambda-tunnel/) for LambdaTest Tunnel.
+
+**Example:**
+```json
+{"loadBalanced": true}
+```
+
+#### mode
+Specifies in which mode tunnel should run "ssh" or "ws". (default "ssh").
+
+**Example:**
+```json
+{"mode": "ssh"}
+```
+
+#### sshConnType
+Specify type of ssh connection (over_22, over_443, over_ws). To use –sshConnType, specify ––mode ssh flag first.
+
+**Example:**
+```json
+{"sshConnType": "over_22"}
+```
+
+#### maxSSHConnections
+Increase the SSH connection from Tunnel Client to Tunnel Server. Maximum allowed value is 30.
+
+**Example:**
+```json
+{"maxSSHConnections": 2}
+```
+
+#### sharedTunnel
+Sharing Tunnel among team members.
+
+**Example:**
+```json
+{"sharedTunnel": true}
+```
+
+#### env
+The environment on which the LambdaTest Tunnel will run.
+
+**Example:**
+```json
+{"env": "production"}
+```
+
+
+#### infoAPIPort
+Exposes [Tunnel Info API](https://www.lambdatest.com/support/docs/advanced-tunnel-features/#tunnelinfoapis) at the specified port.
+
+**Example:**
+```json
+{"infoAPIPort": 8080}
+```
+
+#### callbackURL
+Callback URL for tunnel status.
+
+**Example:**
+```json
+{"callbackURL": "https://example.com/callback"}
+```
+
+
+#### allowHosts
+Comma separated list of hosts to route via tunnel. Everything else will be routed via Internet.
+
+**Example:**
+```json
+{"allowHosts": "example.com,anotherexample.com"}
+```
+
+#### bypassHosts
+Comma separated list of hosts to bypass from tunnel. These will be routed via internet.
+
+**Example:**
+```json
+{"bypassHosts": "example.com,anotherexample.com"}
+```
+
+
+
+#### clientCert
+mTLS Client Certificate filepath.
+
+**Example:**
+```json
+{"clientCert": "/path/to/client_certificate"}
+```
+
+#### clientKey
+mTLS Client Key filepath.
+
+**Example:**
+```json
+{"clientKey": "/path/to/client_key"}
+```
+
+#### mTLSHosts
+Comma separated list of mTLS hosts.
+
+**Example:**
+```json
+{"mTLSHosts": "example.com,anotherexample.com"}
+```
+
+
+#### dns
+Comma separated list of DNS Servers.
+
+**Example:**
+```json
+{"dns": "8.8.8.8,8.8.4.4"}
+```
+
+
+#### mitm
+Enable the [MITM (Man-in-the-middle)](https://www.lambdatest.com/support/docs/advanced-tunnel-features/#mitmlocaltesting) mode for LambdaTest Tunnel.
+
+**Example:**
+```json
+{"mitm": true}
+```
+
+#### ntlm
+To use Microsoft NTLM (Windows NT LAN Manager) authentication for communication or transport purposes.
+
+**Example:**
+```json
+{"ntlm": true}
+```
+
+#### pidfile
+Path of pidfile, where process Id will be written.
+
+**Example:**
+```json
+{"pidfile": "/path/to/pidfile"}
+```
+
+
+#### usePrivateIp
+Sets remote address to an internal IP of client machine.
+
+**Example:**
+```json
+{"usePrivateIp": true}
+```
+
+You can find more about these options [here](https://www.lambdatest.com/support/docs/lambda-tunnel-modifiers/).
 
 ### preferScenarioName
 Cucumber only. Set the session name to the Scenario name if only a single Scenario ran.
