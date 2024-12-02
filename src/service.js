@@ -423,10 +423,10 @@ export default class LambdaRestService {
     if (this._browser.isMultiremote) {
       return Promise.all(Object.keys(this._capabilities).map(async (browserName) => {
         const browser = this._browser[browserName];
-        return await browser.execute(cmd);
+        return await browser.executeScript(cmd.toString(), []);
       }));
     }
-    return await this._browser.execute(cmd);
+    return await this._browser.executeScript(cmd.toString(), []);
   }
 
   getSessionURL(sessionId, product) {
