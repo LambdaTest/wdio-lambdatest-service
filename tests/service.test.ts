@@ -11,7 +11,7 @@ vi.mock('@wdio/logger', () => import(path.join(process.cwd(), '__mocks__', '@wdi
 
 const browser = {
     config: {},
-    executeScript: vi.fn(),
+    execute: vi.fn(),
     chromeA: { sessionId: 'sessionChromeA' },
     chromeB: { sessionId: 'sessionChromeB' },
     chromeC: { sessionId: 'sessionChromeC' },
