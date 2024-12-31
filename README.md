@@ -394,6 +394,14 @@ Automatically set the session status (passed/failed).
 Type: `Boolean`<br />
 Default: `true`
 
+
+### ignoreTestCountInName
+Ignore the count of retries of a test in the name
+
+Type: `Boolean`<br />
+Default: `false`
+
+
 ### useScenarioName
 To get test names as scenario names for cucumber specific tests, simply add `useScenarioName: true` in your `wdio.conf.js`.
 
