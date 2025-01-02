@@ -34,6 +34,8 @@ export default class LambdaRestService {
   _useScenarioName;
   _lambdaCredentials;
   _currentTestTitle;
+  //keep track of last reloaded session within a larger test-suite
+  _lastReloadedSession;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -161,8 +163,6 @@ export default class LambdaRestService {
 
   afterTest(test, context, { error, passed }) {
     this._specsRan = true;
-    this._fullTitle = this._currentTestTitle
-
     // remove failure if test was retried and passed
     // (Mocha only)
     if (test._retriedTest && passed) {
@@ -255,6 +255,11 @@ export default class LambdaRestService {
         log.info(`Session URL: ${sessionURL}`);
       }
 
+      // Use the failure value for result in case of reloaded sessions
+      if (this._lastReloadedSession==this._browser.sessionId){
+        return this._update({ sessionId: this._browser.sessionId, failures: failures });
+      }
+
       return this._update({ sessionId: this._browser.sessionId, failures: result });
     }
 
@@ -272,6 +277,7 @@ export default class LambdaRestService {
   }
 
   async onReload(oldSessionId, newSessionId) {
+    this._lastReloadedSession = newSessionId;
     if (!this._isServiceEnabled) {
       return;
     }
@@ -287,7 +293,7 @@ export default class LambdaRestService {
         log.info(`Session URL: ${sessionURL}`);
       }
 
-      await this._update({ sessionId: oldSessionId, fullTitle: this._currentTestTitle, status: status, calledOnReload: true });
+      await this._update({ sessionId: oldSessionId, fullTitle: this._fullTitle, status: status, calledOnReload: true });
 
     } else {
       const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
@@ -304,7 +310,6 @@ export default class LambdaRestService {
 
     this._failReasons = [];
     this._scenariosThatRan = [];
-    delete this._suiteTitle;
     delete this._fullTitle;
   }
 
@@ -398,8 +403,8 @@ export default class LambdaRestService {
       name = `${pre}${test.parent}${post}`;
     }
 
-    if (name !== this.__fullTitle) {
-      this.__fullTitle = name;
+    if (name !== this._fullTitle) {
+      this._fullTitle = name;
       await this._setSessionName(name);
     }
   }
