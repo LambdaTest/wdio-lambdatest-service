@@ -35,6 +35,11 @@ export interface SessionNameOptions {
      * @default true
      */
     setSessionStatus?: boolean;
+    /**
+     * Ignore the count of retries of a test in the name.
+     * @default false
+     */
+    ignoreTestCountInName?: boolean;
 }
 
 export interface LTOptions {

@@ -9,6 +9,7 @@ const log = logger('@wdio/lambdatest-service')
 const DEFAULT_OPTIONS = {
   setSessionName: true,
   setSessionStatus: true,
+  ignoreTestCountInName:false,
 };
 
 export default class LambdaRestService {
@@ -18,6 +19,7 @@ export default class LambdaRestService {
   _config;
   _failReasons = [];
   _failures = 0;
+  _retryFailures = 0;
   _failureStatuses = ['failed', 'ambiguous', 'undefined', 'unknown'];
   _fullTitle;
   _isServiceEnabled = true;
@@ -32,6 +34,8 @@ export default class LambdaRestService {
   _useScenarioName;
   _lambdaCredentials;
   _currentTestTitle;
+  //keep track of last reloaded session within a larger test-suite
+  _lastReloadedSession;
 
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
@@ -159,11 +163,11 @@ export default class LambdaRestService {
 
   afterTest(test, context, { error, passed }) {
     this._specsRan = true;
-
     // remove failure if test was retried and passed
     // (Mocha only)
     if (test._retriedTest && passed) {
       --this._failures;
+      this._retryFailures = 0;
       return;
     }
 
@@ -178,12 +182,14 @@ export default class LambdaRestService {
         test._currentRetry < test._retries
       )
     ) {
+      ++this._retryFailures;
       return;
     }
 
     const isJasminePendingError = typeof error === 'string' && error.includes('marked Pending');
     if (!passed && !isJasminePendingError) {
       ++this._failures;
+      ++this._retryFailures;
       this._failReasons.push((error && error.message) || 'Unknown Error')
       this._error=error?.message || 'Unknown Error';
       if (this._ltErrorRemark && this._error !== null && this._error !== undefined) {
@@ -249,6 +255,11 @@ export default class LambdaRestService {
         log.info(`Session URL: ${sessionURL}`);
       }
 
+      // Use the failure value for result in case of reloaded sessions
+      if (this._lastReloadedSession==this._browser.sessionId){
+        return this._update({ sessionId: this._browser.sessionId, failures: failures });
+      }
+
       return this._update({ sessionId: this._browser.sessionId, failures: result });
     }
 
@@ -266,11 +277,12 @@ export default class LambdaRestService {
   }
 
   async onReload(oldSessionId, newSessionId) {
+    this._lastReloadedSession = newSessionId;
     if (!this._isServiceEnabled) {
       return;
     }
 
-    const status = (this._failures > 0 ? 'failed' : 'passed');
+    const status = (this._failures > 0 || this._retryFailures>0) ? 'failed' : 'passed';
 
     if (!this._browser.isMultiremote) {
       log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
@@ -281,7 +293,7 @@ export default class LambdaRestService {
         log.info(`Session URL: ${sessionURL}`);
       }
 
-      await this._update({ sessionId: oldSessionId, fullTitle: this._currentTestTitle, status: status, calledOnReload: true });
+      await this._update({ sessionId: oldSessionId, fullTitle: this._fullTitle, status: status, calledOnReload: true });
 
     } else {
       const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
@@ -298,7 +310,6 @@ export default class LambdaRestService {
 
     this._failReasons = [];
     this._scenariosThatRan = [];
-    delete this._suiteTitle;
     delete this._fullTitle;
   }
 
@@ -317,9 +328,12 @@ export default class LambdaRestService {
 
   async updateJob({ sessionId, fullTitle, status, _failures, calledOnReload = false, browserName }) {
     
-    let body = this.getBody({ _failures, calledOnReload, browserName });
+    let body;
     if(calledOnReload){
        body = this.getBody({ fullTitle, status, calledOnReload, browserName });
+    }
+    else{
+      body = this.getBody({ _failures, calledOnReload, browserName });
     }
     try {
       await updateSessionById(sessionId, body, this._lambdaCredentials);
@@ -327,6 +341,7 @@ export default class LambdaRestService {
       console.log(ex);
     }
     this._failures = 0;
+    this._retryFailures=0;
   }
 
   getBody({ fullTitle, status, _failures, calledOnReload = false, browserName }) {
@@ -357,8 +372,7 @@ export default class LambdaRestService {
         if (this._browser.isMultiremote) {
           testCnt = Math.ceil(testCnt / this._browser.instances.length);
         }
-
-        if (!calledOnReload){
+        if (!calledOnReload && !this._options.ignoreTestCountInName){
           body.name += ` (${testCnt})`;
         }
       }
@@ -389,8 +403,8 @@ export default class LambdaRestService {
       name = `${pre}${test.parent}${post}`;
     }
 
-    if (name !== this.__fullTitle) {
-      this.__fullTitle = name;
+    if (name !== this._fullTitle) {
+      this._fullTitle = name;
       await this._setSessionName(name);
     }
   }
@@ -406,7 +420,7 @@ export default class LambdaRestService {
       };
   
       const errorCustom = `lambda-hook: ${JSON.stringify(hookObject)}`;
-      await this._browser.execute(errorCustom);
+      await this._browser.executeScript(errorCustom.toString(), []);
     } catch (error) {
       console.log("Error setting session remarks:", error);
     }
