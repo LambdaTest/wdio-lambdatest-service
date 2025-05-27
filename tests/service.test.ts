@@ -102,7 +102,7 @@ test('afterScenario', () => {
 })
 
 test('after', () => {
-    const service = new LambdaTestService({}, [] as any, {} as any)
+    const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
     service['_failures'] = 5
@@ -118,7 +118,7 @@ test('after', () => {
 })
 
 test('after with mochaOpt bail set to 1', () => {
-    const service = new LambdaTestService({}, {}, { mochaOpts: { bail: 1 } } as any)
+    const service = new LambdaTestService({ setSessionStatus: true }, {}, { mochaOpts: { bail: 1 } } as any)
     service['_browser'] = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
     service['_config'] = { ...service['_config'], mochaOpts: { bail: 1 } }
@@ -137,7 +137,7 @@ test('after with mochaOpt bail set to 1', () => {
 })
 
 test('after in multiremote', () => {
-    const service = new LambdaTestService({}, [] as any, {} as any)
+    const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession(
         { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any,
@@ -171,7 +171,7 @@ test('after in multiremote', () => {
 })
 
 test('after in multiremote', () => {
-    const service = new LambdaTestService({}, [] as any, {} as any)
+    const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession(
         { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any,
@@ -194,7 +194,7 @@ test('after in multiremote', () => {
 })
 
 test('onReload', () => {
-    const service = new LambdaTestService({}, [] as any, {} as any)
+    const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
     service['_failures'] = 5
@@ -262,7 +262,7 @@ describe('beforeTest', () => {
 
     describe('sessionNamePrependTopLevelSuiteTitle is true', () => {
         it('should set title for Mocha tests using concatenation of top level suite name, innermost suite name, and test title', async () => {
-            const service = new LambdaTestService({ sessionNamePrependTopLevelSuiteTitle: true }, [] as any, {} as any)
+            const service = new LambdaTestService({ sessionNamePrependTopLevelSuiteTitle: true, setSessionName: true }, [] as any, {} as any)
             const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
@@ -290,7 +290,7 @@ describe('beforeTest', () => {
 
     describe('sessionNamePrependTopLevelSuiteTitle is true, sessionNameOmitTestTitle is true', () => {
         it('should set title for Mocha tests using concatenation of top level suite name and innermost suite name', async () => {
-            const service = new LambdaTestService({ sessionNamePrependTopLevelSuiteTitle: true, sessionNameOmitTestTitle: true }, [] as any, {} as any)
+            const service = new LambdaTestService({ sessionNamePrependTopLevelSuiteTitle: true, sessionNameOmitTestTitle: true, setSessionName: true }, [] as any, {} as any)
             const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
@@ -305,6 +305,7 @@ describe('beforeTest', () => {
     describe('sessionNameFormat is defined', () => {
         it('should set title via sessionNameFormat method', async () => {
             const service = new LambdaTestService({
+                setSessionName: true,
                 sessionNameFormat: (config: any, caps: any, suiteTitle, testTitle) => {
                     if (testTitle) {
                         return `${config.region} - ${(caps).browserName} - ${suiteTitle} - ${testTitle}`
@@ -334,7 +335,7 @@ describe('beforeTest', () => {
 
     describe('Jasmine only', () => {
         it('should set suite name of first test as title', async () => {
-            const service = new LambdaTestService({}, [] as any, {} as any)
+            const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
             const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
@@ -345,7 +346,7 @@ describe('beforeTest', () => {
         })
 
         it('should set parent suite name as title', async () => {
-            const service = new LambdaTestService({}, [] as any, {} as any)
+            const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
             const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
@@ -361,7 +362,7 @@ describe('beforeTest', () => {
 
 describe('afterTest', () => {
     it('should increment failures on fails', () => {
-        const service = new LambdaTestService({}, [] as any, {} as any)
+        const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
         const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
         service.before(service['_config'], [], browser)
         service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
@@ -407,7 +408,7 @@ describe('afterTest', () => {
     })
 
     it('should not increment failure reasons on passes', () => {
-        const service = new LambdaTestService({}, [] as any, {} as any)
+        const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
         const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
         service.before(service['_config'], [], browser)
         service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
