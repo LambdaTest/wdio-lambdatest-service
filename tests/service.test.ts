@@ -101,34 +101,34 @@ test('afterScenario', () => {
     expect(service['_failures']).toBe(0)
 })
 
-test('after', () => {
+test('after', async () => {
     const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
     service['_failures'] = 5
-    const updateSpy = vi.spyOn(service, '_update')
+    const updateSpy = vi.spyOn(service, '_update').mockResolvedValue(undefined)
 
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
-    service.after(5)
+    await service.after(5)
     expect(updateSpy).toBeCalledWith({
         sessionId: 'foobar',
         failures: 5
     });
 })
 
-test('after with mochaOpt bail set to 1', () => {
+test('after with mochaOpt bail set to 1', async () => {
     const service = new LambdaTestService({ setSessionStatus: true }, {}, { mochaOpts: { bail: 1 } } as any)
     service['_browser'] = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
     service['_config'] = { ...service['_config'], mochaOpts: { bail: 1 } }
     service['_failures'] = 5
-    const updateSpy = vi.spyOn(service, '_update')
+    const updateSpy = vi.spyOn(service, '_update').mockResolvedValue(undefined)
 
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
     service['_browser'].config = { mochaOpts: { bail: 1 } }
-    service.after(1)
+    await service.after(1)
 
     expect(updateSpy).toBeCalledWith({
         'sessionId': 'foobar',
@@ -136,7 +136,7 @@ test('after with mochaOpt bail set to 1', () => {
         })
 })
 
-test('after in multiremote', () => {
+test('after in multiremote', async () => {
     const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession(
@@ -144,11 +144,11 @@ test('after in multiremote', () => {
         { chromeA: {}, chromeB: {}, chromeC: {} } as any
     )
     service['_failures'] = 5
-    const updateSpy = vi.spyOn(service, '_update')
+    const updateSpy = vi.spyOn(service, '_update').mockResolvedValue(undefined)
 
     service['_browser'].isMultiremote = true
     service['_browser'].sessionId = 'foobar'
-    service.after(5)
+    await service.after(5)
 
     expect(updateSpy).toBeCalledWith({
             'browserName': 'chromeA',
@@ -170,7 +170,7 @@ test('after in multiremote', () => {
             })
 })
 
-test('after in multiremote', () => {
+test('after in multiremote', async () => {
     const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession(
@@ -178,12 +178,12 @@ test('after in multiremote', () => {
         { chromeA: {}, chromeB: {}, chromeC: {} } as any
     )
     service['_failures'] = 5
-    const updateSpy = vi.spyOn(service, '_update')
+    const updateSpy = vi.spyOn(service, '_update').mockResolvedValue(undefined)
 
     service['_browser'].isMultiremote = true
     service['_browser'].sessionId = 'foobar'
     service['_browser'].chromeB.sessionId = 'newSessionChromeB'
-    service.onReload('sessionChromeB', 'newSessionChromeB')
+    await service.onReload('sessionChromeB', 'newSessionChromeB')
 
     expect(updateSpy).toBeCalledWith({
             'browserName': 'chromeB',
@@ -193,16 +193,16 @@ test('after in multiremote', () => {
              })
 })
 
-test('onReload', () => {
+test('onReload', async () => {
     const service = new LambdaTestService({ setSessionStatus: true }, [] as any, {} as any)
     service['_browser'] = browser
     service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
     service['_failures'] = 5
-    const updateSpy = vi.spyOn(service, '_update')
+    const updateSpy = vi.spyOn(service, '_update').mockResolvedValue(undefined)
 
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
-    service.onReload('oldbar', 'newbar')
+    await service.onReload('oldbar', 'newbar')
 
     expect(updateSpy).toBeCalledWith({
             'calledOnReload': true,
@@ -263,7 +263,7 @@ describe('beforeTest', () => {
     describe('sessionNamePrependTopLevelSuiteTitle is true', () => {
         it('should set title for Mocha tests using concatenation of top level suite name, innermost suite name, and test title', async () => {
             const service = new LambdaTestService({ sessionNamePrependTopLevelSuiteTitle: true, setSessionName: true }, [] as any, {} as any)
-            const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+            const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
             await service.beforeSuite({ title: 'Project Title' } as any)
@@ -291,7 +291,7 @@ describe('beforeTest', () => {
     describe('sessionNamePrependTopLevelSuiteTitle is true, sessionNameOmitTestTitle is true', () => {
         it('should set title for Mocha tests using concatenation of top level suite name and innermost suite name', async () => {
             const service = new LambdaTestService({ sessionNamePrependTopLevelSuiteTitle: true, sessionNameOmitTestTitle: true, setSessionName: true }, [] as any, {} as any)
-            const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+            const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
             await service.beforeSuite({ title: 'Project Title' } as any)
@@ -320,7 +320,7 @@ describe('beforeTest', () => {
                 region: 'eu',
                 capabilities: {} as any
             })
-            const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+            const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
             service['_browser'] = browser
@@ -336,7 +336,7 @@ describe('beforeTest', () => {
     describe('Jasmine only', () => {
         it('should set suite name of first test as title', async () => {
             const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
-            const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+            const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
             await service.beforeSuite({ title: 'Jasmine__TopLevel__Suite' } as any)
@@ -347,7 +347,7 @@ describe('beforeTest', () => {
 
         it('should set parent suite name as title', async () => {
             const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
-            const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+            const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
             await service.before(service['_config'], [], browser)
             service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
             await service.beforeSuite({ title: 'Jasmine__TopLevel__Suite' } as any)
@@ -361,14 +361,14 @@ describe('beforeTest', () => {
 })
 
 describe('afterTest', () => {
-    it('should increment failures on fails', () => {
+    it('should increment failures on fails', async () => {
         const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
-        const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+        const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
         service.before(service['_config'], [], browser)
         service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
         service['_fullTitle'] = ''
-        service.beforeSuite({ title: 'foo' } as any)
-        service.beforeTest({ title: 'foo', parent: 'bar' } as any)
+        await service.beforeSuite({ title: 'foo' } as any)
+        await service.beforeTest({ title: 'foo', parent: 'bar' } as any)
         service.afterTest(
             { title: 'foo', parent: 'bar' } as any,
             undefined,
@@ -377,7 +377,7 @@ describe('afterTest', () => {
         expect(service['_failReasons']).toHaveLength(1)
         expect(service['_failReasons']).toContain('cool reason')
 
-        service.beforeTest({ title: 'foo2', parent: 'bar2' } as any)
+        await service.beforeTest({ title: 'foo2', parent: 'bar2' } as any)
         service.afterTest(
             { title: 'foo2', parent: 'bar2' } as any,
             undefined,
@@ -388,7 +388,7 @@ describe('afterTest', () => {
         expect(service['_failReasons']).toContain('cool reason')
         expect(service['_failReasons']).toContain('not so cool reason')
 
-        service.beforeTest({ title: 'foo3', parent: 'bar3' } as any)
+        await service.beforeTest({ title: 'foo3', parent: 'bar3' } as any)
         service.afterTest(
             { title: 'foo3', parent: 'bar3' } as any,
             undefined,
@@ -407,20 +407,20 @@ describe('afterTest', () => {
         expect(service['_failReasons']).toContain('Unknown Error')
     })
 
-    it('should not increment failure reasons on passes', () => {
+    it('should not increment failure reasons on passes', async () => {
         const service = new LambdaTestService({ setSessionName: true }, [] as any, {} as any)
-        const setSessionNameSpy = vi.spyOn(service, '_setSessionName')
+        const setSessionNameSpy = vi.spyOn(service, '_setSessionName').mockResolvedValue(undefined)
         service.before(service['_config'], [], browser)
         service.beforeSession({ user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any, {})
-        service.beforeSuite({ title: 'foo' } as any)
-        service.beforeTest({ title: 'foo', parent: 'bar' } as any)
+        await service.beforeSuite({ title: 'foo' } as any)
+        await service.beforeTest({ title: 'foo', parent: 'bar' } as any)
         service.afterTest(
             { title: 'foo', parent: 'bar' } as any,
             undefined,
             { error: { message: 'cool reason' }, result: 1, duration: 5, passed: true } as any)
         expect(service['_failReasons']).toEqual([])
 
-        service.beforeTest({ title: 'foo2', parent: 'bar2' } as any)
+        await service.beforeTest({ title: 'foo2', parent: 'bar2' } as any)
         service.afterTest(
             { title: 'foo2', parent: 'bar2' } as any,
             undefined,
