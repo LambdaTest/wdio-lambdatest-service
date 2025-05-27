@@ -374,11 +374,8 @@ export default class LambdaRestService {
     if (!this._options.setSessionStatus) {
       return;
     }
-    // Skip sleep in test environment to avoid test failures
-    if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
-      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-      await sleep(5000);
-    }
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    await sleep(5000);
     if (calledOnReload) {
       return await this.updateJob({
         sessionId,

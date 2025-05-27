@@ -1,11 +1,19 @@
 import path from 'path'
 
-import { describe, expect, it, test, vi } from 'vitest'
+import { describe, expect, it, test, vi, beforeEach, afterEach } from 'vitest'
 import LambdaTestService from '../src/service.js'
 
 process.env.LT_USERNAME = process.env.LT_USERNAME ?? 'foo'
 process.env.LT_ACCESS_KEY = process.env.LT_ACCESS_KEY ?? 'bar'
 
+// Mock timers to handle the 5-second delay in _update method
+beforeEach(() => {
+    vi.useFakeTimers()
+})
+
+afterEach(() => {
+    vi.useRealTimers()
+})
 
 vi.mock('@wdio/logger', () => import(path.join(process.cwd(), '__mocks__', '@wdio/logger')))
 
@@ -117,7 +125,12 @@ test('after', async () => {
 
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
-    await service.after(5)
+    const afterPromise = service.after(5)
+    
+    // Advance timers to complete the 5-second delay in _update
+    await vi.advanceTimersByTimeAsync(5000)
+    await afterPromise
+    
     expect(updateSpy).toBeCalledWith({
         sessionId: 'foobar',
         failures: 5
@@ -135,7 +148,11 @@ test('after with mochaOpt bail set to 1', async () => {
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
     service['_browser'].config = { mochaOpts: { bail: 1 } }
-    await service.after(1)
+    const afterPromise = service.after(1)
+    
+    // Advance timers to complete the 5-second delay in _update
+    await vi.advanceTimersByTimeAsync(5000)
+    await afterPromise
 
     expect(updateSpy).toBeCalledWith({
         'sessionId': 'foobar',
@@ -159,7 +176,11 @@ test('after in multiremote', async () => {
 
     service['_browser'].isMultiremote = true
     service['_browser'].sessionId = 'foobar'
-    await service.after(5)
+    const afterPromise = service.after(5)
+    
+    // Advance timers to complete the 5-second delay in _update (for all 3 browsers)
+    await vi.advanceTimersByTimeAsync(5000)
+    await afterPromise
 
     expect(updateSpy).toBeCalledWith({
             'browserName': 'chromeA',
@@ -198,7 +219,11 @@ test('after in multiremote', async () => {
     service['_browser'].isMultiremote = true
     service['_browser'].sessionId = 'foobar'
     service['_browser'].chromeB.sessionId = 'newSessionChromeB'
-    await service.onReload('sessionChromeB', 'newSessionChromeB')
+    const onReloadPromise = service.onReload('sessionChromeB', 'newSessionChromeB')
+    
+    // Advance timers to complete the 5-second delay in _update
+    await vi.advanceTimersByTimeAsync(5000)
+    await onReloadPromise
 
     expect(updateSpy).toBeCalledWith({
             'browserName': 'chromeB',
@@ -217,7 +242,11 @@ test('onReload', async () => {
 
     service['_browser'].isMultiremote = false
     service['_browser'].sessionId = 'foobar'
-    await service.onReload('oldbar', 'newbar')
+    const onReloadPromise = service.onReload('oldbar', 'newbar')
+    
+    // Advance timers to complete the 5-second delay in _update
+    await vi.advanceTimersByTimeAsync(5000)
+    await onReloadPromise
 
     expect(updateSpy).toBeCalledWith({
             'calledOnReload': true,
