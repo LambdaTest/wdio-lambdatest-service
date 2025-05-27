@@ -1,6 +1,6 @@
 {
   "name": "wdio-lambdatest-service",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "A WebdriverIO service that manages tunnel and job metadata for LambdaTest.",
   "author": "LambdaTest <keys@lambdatest.com>",
   "contributors": [
@@ -32,9 +32,12 @@
     "lint:staged": "git diff-index --cached --name-only --diff-filter=d HEAD | grep -E \".*\\.[cm]?js$\" | xargs -r node_modules/eslint/bin/eslint.js",
     "prepare": "run-s build",
     "postbuild": "cp src/*.d.ts build/",
-    "test": "run-s test:*",
+    "test": "run-s test:eslint test:unit",
     "test:eslint": "eslint --cache src",
-    "test:unit": "vitest --coverage"
+    "test:unit": "vitest run tests/service.test.ts tests/launcher.test.ts --coverage",
+    "test:integration": "RUN_INTEGRATION_TESTS=true vitest run tests/integration.test.js",
+    "test:stress": "RUN_STRESS_TEST=true vitest run tests/rigorous-memory-stress.test.js --testTimeout=600000",
+    "test:all": "run-s test:eslint test:unit test:integration test:stress"
   },
   "keywords": [
     "webdriver",
@@ -91,7 +94,8 @@
     "rimraf": "^3.0.0",
     "tempy": "^0.3.0",
     "typescript": "^3.6.3",
-    "vitest": "^0.34.4"
+    "vitest": "^0.34.4",
+    "webdriverio": "^9.14.0"
   },
   "husky": {
     "hooks": {

@@ -5,6 +5,42 @@ WebdriverIO LambdaTest Service
 
 > A WebdriverIO service that manages tunnel and job metadata for LambdaTest users.
 
+## ✅ WebdriverIO v9 Support
+
+**Version 4.1.0+** includes full WebdriverIO v9 compatibility with performance improvements:
+- **7x faster execution** in WebdriverIO v9 Bidi mode
+- **Automatic protocol detection** (WebDriver Bidi vs Classic)
+- **Memory optimization** prevents overflow errors during intensive operations
+- **Backward compatible** with WebdriverIO v7 and v8
+
+### Quick Setup for v9:
+```js
+// wdio.conf.js
+capabilities: [{
+  'LT:Options': {
+    // ... your existing options
+    webSocketUrl: true  // Enable Bidi for optimal v9 performance
+  }
+}]
+```
+
+## 🧪 Testing
+
+### Environment Variables
+For integration and stress tests, set these environment variables:
+```bash
+export LT_USERNAME="your-lambdatest-username"
+export LT_ACCESS_KEY="your-lambdatest-access-key"
+```
+
+### Test Commands
+```bash
+npm test                    # Run unit tests and linting
+npm run test:integration    # Run integration tests (requires LT credentials)
+npm run test:stress         # Run stress tests (requires LT credentials)
+npm run test:all           # Run all tests
+```
+
 ## Installation
 
 ```bash

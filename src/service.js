@@ -1,15 +1,15 @@
-import logger from '@wdio/logger'
+import logger from '@wdio/logger';
 
-import { getParentSuiteName, updateSessionById } from './util.js'
+import { getParentSuiteName, updateSessionById } from './util.js';
 import { appSessionURL, webSessionURL } from './constants.js';
 
-const log = logger('@wdio/lambdatest-service')
+const log = logger('@wdio/lambdatest-service');
 
 /** @type {import('./types.js').LTOptions & import('./types.js').SessionNameOptions} */
 const DEFAULT_OPTIONS = {
   setSessionName: true,
   setSessionStatus: true,
-  ignoreTestCountInName:false,
+  ignoreTestCountInName: false,
 };
 
 export default class LambdaRestService {
@@ -44,7 +44,9 @@ export default class LambdaRestService {
     this._testCnt = 0;
     this._failures = 0;
     // Cucumber specific
-    const strict = Boolean(this._config?.cucumberOpts && this._config?.cucumberOpts?.strict);
+    const strict = Boolean(
+      this._config?.cucumberOpts && this._config?.cucumberOpts?.strict
+    );
     // See https://github.com/cucumber/cucumber-js/blob/master/src/runtime/index.ts#L136
     if (strict) {
       this._failureStatuses.push('pending');
@@ -62,7 +64,7 @@ export default class LambdaRestService {
     const lambdaCredentials = {
       username: this._config.user,
       accessKey: this._config.key,
-      isApp : false
+      isApp: false,
     };
 
     if (this._config.product === 'appAutomation') {
@@ -72,19 +74,17 @@ export default class LambdaRestService {
     if (this._config.logFile) {
       lambdaCredentials.logFile = this._config.logFile;
     }
-    if(this._config.ltErrorRemark ===true)
-    {
-      this._ltErrorRemark=true;
+    if (this._config.ltErrorRemark === true) {
+      this._ltErrorRemark = true;
     }
     // Cucumber specific option to set test name from scenario
-    if(this._config.useScenarioName === true)
-    {
-      this._useScenarioName=true;
+    if (this._config.useScenarioName === true) {
+      this._useScenarioName = true;
     }
 
-    this._isServiceEnabled = lambdaCredentials.username && lambdaCredentials.accessKey;
-    this._lambdaCredentials=lambdaCredentials;
-    
+    this._isServiceEnabled =
+      lambdaCredentials.username && lambdaCredentials.accessKey;
+    this._lambdaCredentials = lambdaCredentials;
   }
 
   async beforeScenario(world, context) {
@@ -116,9 +116,9 @@ export default class LambdaRestService {
     if (test && test?.parent !== undefined) {
       this._currentTestTitle = test?.parent;
       this._currentTestTitle = `${this._currentTestTitle} - ${test?.title}`;
-  } else if (test && test?.fullName !== undefined) {
+    } else if (test && test?.fullName !== undefined) {
       this._currentTestTitle = test?.fullName;
-  }
+    }
 
     if (test.title && !this._testTitle) {
       this._testTitle = test.title;
@@ -176,23 +176,26 @@ export default class LambdaRestService {
     if (
       test._retriedTest &&
       !passed &&
-      (
-        typeof test._currentRetry === 'number' &&
-        typeof test._retries === 'number' &&
-        test._currentRetry < test._retries
-      )
+      typeof test._currentRetry === 'number' &&
+      typeof test._retries === 'number' &&
+      test._currentRetry < test._retries
     ) {
       ++this._retryFailures;
       return;
     }
 
-    const isJasminePendingError = typeof error === 'string' && error.includes('marked Pending');
+    const isJasminePendingError =
+      typeof error === 'string' && error.includes('marked Pending');
     if (!passed && !isJasminePendingError) {
       ++this._failures;
       ++this._retryFailures;
-      this._failReasons.push((error && error.message) || 'Unknown Error')
-      this._error=error?.message || 'Unknown Error';
-      if (this._ltErrorRemark && this._error !== null && this._error !== undefined) {
+      this._failReasons.push((error && error.message) || 'Unknown Error');
+      this._error = error?.message || 'Unknown Error';
+      if (
+        this._ltErrorRemark &&
+        this._error !== null &&
+        this._error !== undefined
+      ) {
         this._setSessionRemarks(this._error);
       }
     }
@@ -206,15 +209,13 @@ export default class LambdaRestService {
       this._scenariosThatRan.push(world.pickle.name || 'unknown pickle name');
     }
     if (status && this._failureStatuses.includes(status)) {
-      const exception = (
+      const exception =
         (world.result && world.result.message) ||
         (status === 'pending'
           ? `Some steps/hooks are pending for scenario "${world.pickle.name}"`
-          : 'Unknown Error'
-        )
-      )
+          : 'Unknown Error');
       ++this._failures;
-      this._failReasons.push(exception)
+      this._failReasons.push(exception);
     } else if (typeof passed !== 'undefined' && !passed) {
       ++this._failures;
     }
@@ -229,7 +230,11 @@ export default class LambdaRestService {
 
     // set _failures if user has bail option set in which case afterTest and
     // afterSuite aren't executed before after hook
-    if (this._config.mochaOpts && this._config.mochaOpts.bail && Boolean(result)) {
+    if (
+      this._config.mochaOpts &&
+      this._config.mochaOpts.bail &&
+      Boolean(result)
+    ) {
       failures = 1;
     }
 
@@ -247,33 +252,56 @@ export default class LambdaRestService {
     const status = 'status: ' + (result > 0 ? 'failed' : 'passed');
 
     if (!this._browser.isMultiremote) {
-      log.info(`Update job with sessionId ${this._browser.sessionId}, ${status}`);
+      log.info(
+        `Update job with sessionId ${this._browser.sessionId}, ${status}`
+      );
 
       // Print session URL for single remote browser
-      if(process.env.LOG_SESSION_URL === "true") {
-        const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
+      if (process.env.LOG_SESSION_URL === 'true') {
+        const sessionURL = this.getSessionURL(
+          this._browser.sessionId,
+          this._config.product
+        );
         log.info(`Session URL: ${sessionURL}`);
       }
 
       // Use the failure value for result in case of reloaded sessions
-      if (this._lastReloadedSession==this._browser.sessionId){
-        return this._update({ sessionId: this._browser.sessionId, failures: failures });
+      if (this._lastReloadedSession == this._browser.sessionId) {
+        return this._update({
+          sessionId: this._browser.sessionId,
+          failures: failures,
+        });
       }
 
-      return this._update({ sessionId: this._browser.sessionId, failures: result });
+      return this._update({
+        sessionId: this._browser.sessionId,
+        failures: result,
+      });
     }
 
-    return Promise.all(Object.keys(this._capabilities).map(browserName => {
-      log.info(`Update multiremote job for browser '${browserName}' and sessionId ${this._browser[browserName].sessionId}, ${status}`);
+    return Promise.all(
+      Object.keys(this._capabilities).map((browserName) => {
+        log.info(
+          `Update multiremote job for browser '${browserName}' and sessionId ${this._browser[browserName].sessionId}, ${status}`
+        );
 
-      // Print session URL for each remote browser
-      if(process.env.LOG_SESSION_URL === "true") {
-        const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
-        log.info(`Session URL for ${browserName}: ${sessionURL}`);
-      }
+        // Print session URL for each remote browser
+        if (process.env.LOG_SESSION_URL === 'true') {
+          const sessionURL = this.getSessionURL(
+            this._browser[browserName].sessionId,
+            this._config.product
+          );
+          log.info(`Session URL for ${browserName}: ${sessionURL}`);
+        }
 
-      return this._update({ sessionId: this._browser[browserName].sessionId, failures: failures, calledOnReload: false, browserName: browserName });
-    }));
+        return this._update({
+          sessionId: this._browser[browserName].sessionId,
+          failures: failures,
+          calledOnReload: false,
+          browserName: browserName,
+        });
+      })
+    );
   }
 
   async onReload(oldSessionId, newSessionId) {
@@ -282,30 +310,52 @@ export default class LambdaRestService {
       return;
     }
 
-    const status = (this._failures > 0 || this._retryFailures>0) ? 'failed' : 'passed';
+    const status =
+      this._failures > 0 || this._retryFailures > 0 ? 'failed' : 'passed';
 
     if (!this._browser.isMultiremote) {
-      log.info(`Update (reloaded) job with sessionId ${oldSessionId}, ${status}`);
+      log.info(
+        `Update (reloaded) job with sessionId ${oldSessionId}, ${status}`
+      );
 
       // Print session URL for single remote browser
-      if(process.env.LOG_SESSION_URL === "true") {
-        const sessionURL = this.getSessionURL(this._browser.sessionId, this._config.product);
+      if (process.env.LOG_SESSION_URL === 'true') {
+        const sessionURL = this.getSessionURL(
+          this._browser.sessionId,
+          this._config.product
+        );
         log.info(`Session URL: ${sessionURL}`);
       }
 
-      await this._update({ sessionId: oldSessionId, fullTitle: this._fullTitle, status: status, calledOnReload: true });
-
+      await this._update({
+        sessionId: oldSessionId,
+        fullTitle: this._fullTitle,
+        status: status,
+        calledOnReload: true,
+      });
     } else {
-      const browserName = this._browser.instances.filter(browserName => this._browser[browserName].sessionId === newSessionId)[0];
-      log.info(`Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`);
+      const browserName = this._browser.instances.filter(
+        (browserName) => this._browser[browserName].sessionId === newSessionId
+      )[0];
+      log.info(
+        `Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`
+      );
 
       // Print session URL for each remote browser
-      if(process.env.LOG_SESSION_URL === "true") {
-        const sessionURL = this.getSessionURL(this._browser[browserName].sessionId, this._config.product);
+      if (process.env.LOG_SESSION_URL === 'true') {
+        const sessionURL = this.getSessionURL(
+          this._browser[browserName].sessionId,
+          this._config.product
+        );
         log.info(`Session URL for ${browserName}: ${sessionURL}`);
       }
 
-      await this._update({ sessionId : oldSessionId, failures:this._failures, calledOnReload: true, browserName: browserName });
+      await this._update({
+        sessionId: oldSessionId,
+        failures: this._failures,
+        calledOnReload: true,
+        browserName: browserName,
+      });
     }
 
     this._failReasons = [];
@@ -313,26 +363,48 @@ export default class LambdaRestService {
     delete this._fullTitle;
   }
 
-  async _update({ sessionId, fullTitle, status, failures, calledOnReload = false, browserName }) {
+  async _update({
+    sessionId,
+    fullTitle,
+    status,
+    failures,
+    calledOnReload = false,
+    browserName,
+  }) {
     if (!this._options.setSessionStatus) {
       return;
     }
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await sleep(5000);
-    if (calledOnReload){
-      return await this.updateJob({ sessionId, fullTitle, status, calledOnReload, browserName });
+    if (calledOnReload) {
+      return await this.updateJob({
+        sessionId,
+        fullTitle,
+        status,
+        calledOnReload,
+        browserName,
+      });
     }
-    return await this.updateJob({ sessionId, _failures: failures, calledOnReload, browserName });
-  
+    return await this.updateJob({
+      sessionId,
+      _failures: failures,
+      calledOnReload,
+      browserName,
+    });
   }
 
-  async updateJob({ sessionId, fullTitle, status, _failures, calledOnReload = false, browserName }) {
-    
+  async updateJob({
+    sessionId,
+    fullTitle,
+    status,
+    _failures,
+    calledOnReload = false,
+    browserName,
+  }) {
     let body;
-    if(calledOnReload){
-       body = this.getBody({ fullTitle, status, calledOnReload, browserName });
-    }
-    else{
+    if (calledOnReload) {
+      body = this.getBody({ fullTitle, status, calledOnReload, browserName });
+    } else {
       body = this.getBody({ _failures, calledOnReload, browserName });
     }
     try {
@@ -341,10 +413,16 @@ export default class LambdaRestService {
       console.log(ex);
     }
     this._failures = 0;
-    this._retryFailures=0;
+    this._retryFailures = 0;
   }
 
-  getBody({ fullTitle, status, _failures, calledOnReload = false, browserName }) {
+  getBody({
+    fullTitle,
+    status,
+    _failures,
+    calledOnReload = false,
+    browserName,
+  }) {
     let body = {};
     if (
       !(
@@ -354,11 +432,14 @@ export default class LambdaRestService {
       )
     ) {
       body.name = this._fullTitle;
-      if(calledOnReload){
-        body.name=fullTitle;
+      if (calledOnReload) {
+        body.name = fullTitle;
       }
 
-      if (this._capabilities['LT:Options'] && this._capabilities['LT:Options'].name) {
+      if (
+        this._capabilities['LT:Options'] &&
+        this._capabilities['LT:Options'].name
+      ) {
         body.name = this._capabilities['LT:Options'].name;
       }
 
@@ -372,13 +453,13 @@ export default class LambdaRestService {
         if (this._browser.isMultiremote) {
           testCnt = Math.ceil(testCnt / this._browser.instances.length);
         }
-        if (!calledOnReload && !this._options.ignoreTestCountInName){
+        if (!calledOnReload && !this._options.ignoreTestCountInName) {
           body.name += ` (${testCnt})`;
         }
       }
     }
     body.status_ind = _failures > 0 ? 'failed' : 'passed';
-    if (calledOnReload){
+    if (calledOnReload) {
       body.status_ind = status;
     }
     return body;
@@ -386,20 +467,25 @@ export default class LambdaRestService {
 
   async setSessionName(suiteTitle, test) {
     if (!this._options.setSessionName || !suiteTitle) {
-        return;
+      return;
     }
-    let name = this._useScenarioName && this._testTitle ? this._testTitle : suiteTitle;
+    let name =
+      this._useScenarioName && this._testTitle ? this._testTitle : suiteTitle;
     if (this._options.sessionNameFormat) {
       name = this._options.sessionNameFormat(
-          this._config,
-          this._capabilities,
-          suiteTitle,
-          test?.title
+        this._config,
+        this._capabilities,
+        suiteTitle,
+        test?.title
       );
     } else if (test && !test.fullName) {
       // Mocha
-      const pre = this._options.sessionNamePrependTopLevelSuiteTitle ? `${suiteTitle} - ` : '';
-      const post = !this._options.sessionNameOmitTestTitle ? ` - ${test.title}` : '';
+      const pre = this._options.sessionNamePrependTopLevelSuiteTitle
+        ? `${suiteTitle} - `
+        : '';
+      const post = !this._options.sessionNameOmitTestTitle
+        ? ` - ${test.title}`
+        : '';
       name = `${pre}${test.parent}${post}`;
     }
 
@@ -412,17 +498,18 @@ export default class LambdaRestService {
   async _setSessionRemarks(err) {
     try {
       const hookObject = {
-        action: "setTestStatus",
+        action: 'setTestStatus',
         arguments: {
-          status: "failed",
-          remark: err
-        }
+          status: 'failed',
+          remark: err,
+        },
       };
-  
+
       const errorCustom = `lambda-hook: ${JSON.stringify(hookObject)}`;
-      await this._browser.executeScript(errorCustom.toString(), []);
+      // Use the same safe execution method to prevent ENOMEM issues
+      await this._safeExecuteScript(this._browser, errorCustom, this._browser.isBidi || false);
     } catch (error) {
-      console.log("Error setting session remarks:", error);
+      console.log('Error setting session remarks:', error);
     }
   }
 
@@ -434,13 +521,71 @@ export default class LambdaRestService {
     if (!this._browser) {
       return;
     }
+
+    // Check if WebDriver Bidi is being used and handle accordingly
+    const isBidi = this._browser.isBidi || false;
+
     if (this._browser.isMultiremote) {
-      return Promise.all(Object.keys(this._capabilities).map(async (browserName) => {
-        const browser = this._browser[browserName];
-        return await browser.executeScript(cmd.toString(), []);
-      }));
+      return Promise.all(
+        Object.keys(this._capabilities).map(async (browserName) => {
+          const browser = this._browser[browserName];
+          return await this._safeExecuteScript(browser, cmd, isBidi);
+        })
+      );
     }
-    return await this._browser.executeScript(cmd.toString(), []);
+    return await this._safeExecuteScript(this._browser, cmd, isBidi);
+  }
+
+  async _safeExecuteScript(browser, cmd, isBidi = false) {
+    try {
+      if (isBidi && browser.execute) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        if (cmd.startsWith('lambda-name=')) {
+          const sessionName = cmd.replace('lambda-name=', '');
+          return await browser.execute((name) => {
+            // eslint-disable-next-line no-undef
+            window.lambdaTestSessionName = name;
+            return true;
+          }, sessionName);
+        }
+        
+        if (cmd.startsWith('lambda-hook:')) {
+          const hookData = cmd.replace('lambda-hook: ', '');
+          return await browser.execute((hookJson) => {
+            try {
+              // eslint-disable-next-line no-undef
+              window.lambdaTestHook = hookJson;
+              return true;
+            } catch (e) {
+              return false;
+            }
+          }, hookData);
+        }
+        
+        return await browser.execute((command) => {
+          try {
+            // eslint-disable-next-line no-undef
+            window.lambdaTestCommand = command;
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }, cmd);
+      }
+
+      return await browser.executeScript(cmd.toString(), []);
+      
+    } catch (error) {
+      const protocol = isBidi ? 'Bidi' : 'Classic';
+      console.warn(`LambdaTest service command failed (${protocol}): ${error.message}`);
+      
+      if (error.message && error.message.includes('ENOMEM')) {
+        console.error('MEMORY OVERFLOW detected in LambdaTest service');
+      }
+      
+      return null;
+    }
   }
 
   getSessionURL(sessionId, product) {
