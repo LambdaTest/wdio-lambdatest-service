@@ -19,8 +19,13 @@ jobs:
         with:
           node-version: 17.x
       
-      - name: npm dependencies
-        run: npm install
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: pnpm dependencies
+        run: pnpm install
         
       - name: Run test
-        run: npm run test
+        run: pnpm run test
