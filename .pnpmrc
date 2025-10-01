@@ -1,0 +1,3 @@
+hoist-pattern[]=*eslint*
+hoist-pattern[]=*prettier*
+auto-install-peers=true
