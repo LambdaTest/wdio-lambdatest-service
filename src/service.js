@@ -12,6 +12,11 @@ const DEFAULT_OPTIONS = {
   ignoreTestCountInName:false,
 };
 
+/**
+ * LambdaTest service for WebdriverIO that manages test session metadata and status updates
+ * Handles test lifecycle events and updates LambdaTest dashboard with test results
+ * @class LambdaRestService
+ */
 export default class LambdaRestService {
   _api;
   _browser;
@@ -37,6 +42,25 @@ export default class LambdaRestService {
   //keep track of last reloaded session within a larger test-suite
   _lastReloadedSession;
 
+  /**
+   * Creates an instance of LambdaRestService
+   * @param {Object} [options={}] - Service configuration options
+   * @param {boolean} [options.setSessionName=true] - Whether to automatically set session names
+   * @param {boolean} [options.setSessionStatus=true] - Whether to automatically set session status
+   * @param {boolean} [options.ignoreTestCountInName=false] - Whether to ignore test count in session names
+   * @param {boolean} [options.preferScenarioName=false] - Whether to prefer scenario names for Cucumber tests
+   * @param {Function} [options.sessionNameFormat] - Custom session name formatting function
+   * @param {boolean} [options.sessionNameOmitTestTitle=false] - Whether to omit test title from session name (Mocha only)
+   * @param {boolean} [options.sessionNamePrependTopLevelSuiteTitle=false] - Whether to prepend top level suite title (Mocha only)
+   * @param {Object} [capabilities={}] - WebDriver capabilities object
+   * @param {Object} [config={}] - WebdriverIO configuration object
+   * @param {string} [config.user] - LambdaTest username
+   * @param {string} [config.key] - LambdaTest access key
+   * @param {string} [config.product] - LambdaTest product type ('appAutomation' for mobile apps)
+   * @param {string} [config.logFile] - Path to log file
+   * @param {boolean} [config.ltErrorRemark] - Whether to send error remarks to LambdaTest
+   * @param {boolean} [config.useScenarioName] - Whether to use scenario names for Cucumber tests
+   */
   constructor(options = {}, capabilities = {}, config = {}) {
     this._options = { ...DEFAULT_OPTIONS, ...options };
     this._capabilities = capabilities;
@@ -51,11 +75,24 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Hook called before test execution begins
+   * Initializes browser instance and resets scenario tracking
+   * @param {Object} caps - WebDriver capabilities
+   * @param {string[]} specs - Array of test spec file paths
+   * @param {Object} browser - WebDriver browser instance
+   */
   before(caps, specs, browser) {
     this._browser = browser;
     this._scenariosThatRan = [];
   }
 
+  /**
+   * Hook called before a new WebDriver session is created
+   * Configures service with session-specific settings and credentials
+   * @param {Object} config - WebdriverIO configuration object
+   * @param {Object} capabilities - WebDriver capabilities for the session
+   */
   beforeSession(config, capabilities) {
     this._config = { ...this._config, ...config };
     this._capabilities = { ...this._capabilities, ...capabilities };
@@ -87,6 +124,13 @@ export default class LambdaRestService {
     
   }
 
+  /**
+   * Hook called before each Cucumber scenario executes
+   * Sets the test title and session name based on scenario details
+   * @param {Object} world - Cucumber world object containing scenario information
+   * @param {Object} context - Additional context information
+   * @returns {Promise<void>} Promise that resolves when session name is set
+   */
   async beforeScenario(world, context) {
     if (this._useScenarioName) {
       this._testTitle = world?.pickle?.name || 'unknown scenario';
@@ -100,6 +144,13 @@ export default class LambdaRestService {
     await this.setSessionName(this._testTitle || this._suiteTitle);
   }
 
+  /**
+   * Hook called before each test suite executes
+   * Sets the suite title and session name
+   * @param {Object} suite - Test suite object
+   * @param {string} suite.title - Title of the test suite
+   * @returns {Promise<void>} Promise that resolves when session name is set
+   */
   async beforeSuite(suite) {
     this._suiteTitle = suite.title;
 
@@ -108,6 +159,15 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Hook called before each individual test executes
+   * Sets test title and configures session name based on test details
+   * @param {Object} test - Test object containing test information
+   * @param {string} [test.title] - Title of the test
+   * @param {string} [test.fullName] - Full name of the test (Jasmine)
+   * @param {string} [test.parent] - Parent suite name
+   * @returns {Promise<void>} Promise that resolves when session name is set
+   */
   async beforeTest(test) {
     if (!this._isServiceEnabled) {
       return;
@@ -140,11 +200,25 @@ export default class LambdaRestService {
     await this.setSessionName(suiteTitle, test);
   }
 
+  /**
+   * Hook called before each Cucumber feature executes
+   * Sets the suite title from feature name and updates session name
+   * @param {string} uri - URI of the feature file
+   * @param {Object} feature - Cucumber feature object
+   * @param {string} feature.name - Name of the feature
+   * @returns {Promise<void>} Promise that resolves when session name is set
+   */
   async beforeFeature(uri, feature) {
     this._suiteTitle = feature.name;
     await this.setSessionName(this._suiteTitle);
   }
 
+  /**
+   * Hook called before each Cucumber step executes
+   * Updates suite title if not already set from step context
+   * @param {Object} step - Cucumber step object
+   * @returns {Promise<void>} Promise that resolves when session name is set
+   */
   async beforeStep(step) {
     if (!this._suiteTitle || this._suiteTitle == 'unknown scenario') {
       this._suiteTitle =
@@ -155,12 +229,26 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Hook called after each test suite completes
+   * Tracks suite-level failures
+   * @param {Object} suite - Test suite object
+   */
   afterSuite(suite) {
     if (Object.prototype.hasOwnProperty.call(suite, 'error')) {
       ++this._failures;
     }
   }
 
+  /**
+   * Hook called after each individual test completes
+   * Tracks test results, failures, and retry attempts
+   * @param {Object} test - Test object
+   * @param {Object} context - Test context
+   * @param {Object} result - Test result object
+   * @param {Error} [result.error] - Error object if test failed
+   * @param {boolean} result.passed - Whether the test passed
+   */
   afterTest(test, context, { error, passed }) {
     this._specsRan = true;
     // remove failure if test was retried and passed
@@ -198,6 +286,13 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Hook called after each Cucumber scenario completes
+   * Tracks scenario results and failure reasons
+   * @param {Object} world - Cucumber world object
+   * @param {Object} result - Scenario result object
+   * @param {boolean} [result.passed] - Whether the scenario passed
+   */
   afterScenario(world, result) {
     const { passed } = result || {};
     this._specsRan = true;
@@ -220,6 +315,12 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Hook called after all tests complete
+   * Updates final session status and handles both single and multiremote browsers
+   * @param {number} result - Exit code (0 for success, >0 for failures)
+   * @returns {Promise<void>|Promise<void[]>} Promise that resolves when session updates complete
+   */
   after(result) {
     if (!this._isServiceEnabled) {
       return;
@@ -276,6 +377,13 @@ export default class LambdaRestService {
     }));
   }
 
+  /**
+   * Hook called when WebDriver session is reloaded
+   * Updates the old session with current status and resets tracking variables
+   * @param {string} oldSessionId - ID of the session being replaced
+   * @param {string} newSessionId - ID of the new session
+   * @returns {Promise<void>} Promise that resolves when session update completes
+   */
   async onReload(oldSessionId, newSessionId) {
     this._lastReloadedSession = newSessionId;
     if (!this._isServiceEnabled) {
@@ -313,6 +421,19 @@ export default class LambdaRestService {
     delete this._fullTitle;
   }
 
+  /**
+   * Internal method to update session metadata
+   * Handles the logic for updating session status and scheduling updates
+   * @param {Object} params - Update parameters
+   * @param {string} params.sessionId - Session ID to update
+   * @param {string} [params.fullTitle] - Full title for the session
+   * @param {string} [params.status] - Session status (passed/failed)
+   * @param {number} [params.failures] - Number of failures
+   * @param {boolean} [params.calledOnReload=false] - Whether called during session reload
+   * @param {string} [params.browserName] - Browser name for multiremote sessions
+   * @returns {Promise<void>} Promise that resolves when update completes
+   * @private
+   */
   async _update({ sessionId, fullTitle, status, failures, calledOnReload = false, browserName }) {
     if (!this._options.setSessionStatus) {
       return;
@@ -326,6 +447,18 @@ export default class LambdaRestService {
   
   }
 
+  /**
+   * Updates job metadata on LambdaTest platform
+   * Sends session status, name, and failure information to LambdaTest API
+   * @param {Object} params - Job update parameters
+   * @param {string} params.sessionId - Session ID to update
+   * @param {string} [params.fullTitle] - Full title for the session
+   * @param {string} [params.status] - Session status (passed/failed)
+   * @param {number} [params._failures] - Number of failures
+   * @param {boolean} [params.calledOnReload=false] - Whether called during session reload
+   * @param {string} [params.browserName] - Browser name for multiremote sessions
+   * @returns {Promise<void>} Promise that resolves when job update completes
+   */
   async updateJob({ sessionId, fullTitle, status, _failures, calledOnReload = false, browserName }) {
     
     let body;
@@ -344,6 +477,17 @@ export default class LambdaRestService {
     this._retryFailures=0;
   }
 
+  /**
+   * Generates the request body for session updates
+   * Creates the payload with session name and status information
+   * @param {Object} params - Parameters for body generation
+   * @param {string} [params.fullTitle] - Full title for the session
+   * @param {string} [params.status] - Session status (passed/failed)
+   * @param {number} [params._failures] - Number of failures
+   * @param {boolean} [params.calledOnReload=false] - Whether called during session reload
+   * @param {string} [params.browserName] - Browser name for multiremote sessions
+   * @returns {Object} Request body object for session update
+   */
   getBody({ fullTitle, status, _failures, calledOnReload = false, browserName }) {
     let body = {};
     if (
@@ -384,6 +528,16 @@ export default class LambdaRestService {
     return body;
   }
 
+  /**
+   * Sets the session name for the current test session
+   * Handles different naming strategies for various test frameworks
+   * @param {string} suiteTitle - Title of the test suite
+   * @param {Object} [test] - Test object with additional naming information
+   * @param {string} [test.title] - Title of the individual test
+   * @param {string} [test.parent] - Parent suite name
+   * @param {string} [test.fullName] - Full test name (Jasmine)
+   * @returns {Promise<void>} Promise that resolves when session name is set
+   */
   async setSessionName(suiteTitle, test) {
     if (!this._options.setSessionName || !suiteTitle) {
         return;
@@ -409,6 +563,13 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Sets error remarks for failed tests on LambdaTest dashboard
+   * Sends error information to be displayed in the test session
+   * @param {string} err - Error message to set as remark
+   * @returns {Promise<void>} Promise that resolves when remark is set
+   * @private
+   */
   async _setSessionRemarks(err) {
     try {
       const hookObject = {
@@ -426,10 +587,23 @@ export default class LambdaRestService {
     }
   }
 
+  /**
+   * Sets the session name using LambdaTest's lambda-name command
+   * @param {string} sessionName - Name to set for the session
+   * @returns {Promise<void>} Promise that resolves when name is set
+   * @private
+   */
   async _setSessionName(sessionName) {
     await this._executeCommand(`lambda-name=${sessionName}`);
   }
 
+  /**
+   * Executes a command in the browser session
+   * Handles both single and multiremote browser configurations
+   * @param {string} cmd - Command to execute in the browser
+   * @returns {Promise<any>} Promise that resolves with command execution result
+   * @private
+   */
   async _executeCommand(cmd) {
     if (!this._browser) {
       return;
@@ -443,6 +617,12 @@ export default class LambdaRestService {
     return await this._browser.executeScript(cmd.toString(), []);
   }
 
+  /**
+   * Generates the session URL for accessing test results on LambdaTest dashboard
+   * @param {string} sessionId - Session ID to generate URL for
+   * @param {string} [product] - Product type ('appAutomation' for mobile apps, default for web)
+   * @returns {string} Complete URL to access the test session on LambdaTest dashboard
+   */
   getSessionURL(sessionId, product) {
     if (product === 'appAutomation') {
       return `${appSessionURL}=${sessionId}`;

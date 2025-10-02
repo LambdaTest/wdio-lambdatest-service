@@ -8,14 +8,39 @@ import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
 import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants.js'
 const log = logger('@wdio/lambdatest-service')
 const colors = require('colors');
+
+/**
+ * LambdaTest launcher service for WebdriverIO that handles tunnel management and app uploads
+ * @class LambdaTestLauncher
+ */
 export default class LambdaTestLauncher {
     lambdatestTunnelProcess
     options
 
+    /**
+     * Creates an instance of LambdaTestLauncher
+     * @param {Object} options - Configuration options for the launcher
+     * @param {boolean} [options.tunnel] - Whether to start LambdaTest tunnel
+     * @param {boolean} [options.app_upload] - Whether to upload app before test execution
+     * @param {Object} [options.app] - App configuration for upload
+     * @param {string} [options.app.app_name] - Name of the app to upload
+     * @param {string} [options.app.app_path] - Local path to the app file
+     * @param {string} [options.app.app_url] - URL to the app file
+     * @param {string} [options.app.custom_id] - Custom identifier for the app
+     * @param {boolean} [options.app.enableCapability] - Whether to set app URL in capabilities
+     * @param {Object} [options.lambdatestOpts] - Additional LambdaTest tunnel options
+     */
     constructor(options) {
         this.options = options
     }
 
+    /**
+     * Configures WebDriver capabilities with LambdaTest specific options
+     * @param {Object|Array<Object>} capabilities - WebDriver capabilities object or array
+     * @param {string} key - The capability key to set
+     * @param {any} value - The value to set for the capability key
+     * @private
+     */
     configureCapabilities(capabilities, key, value) {
         const updateCapability = (capability) => {
             if (capability['lt:options']) {
@@ -36,6 +61,16 @@ export default class LambdaTestLauncher {
         }
     }
 
+    /**
+     * Prepares the test environment by uploading apps and starting tunnels
+     * Called before test execution begins
+     * @param {Object} config - WebdriverIO configuration object
+     * @param {string} config.user - LambdaTest username
+     * @param {string} config.key - LambdaTest access key
+     * @param {Object|Array<Object>} capabilities - WebDriver capabilities
+     * @returns {Promise<void>} Promise that resolves when preparation is complete
+     * @throws {Error} When app upload fails or tunnel startup fails
+     */
     // modify config and launch tunnel
     async onPrepare(config, capabilities) {
 
@@ -126,7 +161,7 @@ export default class LambdaTestLauncher {
                     })
                 })
             })),
-            new Promise((resolve, reject) => {
+            new Promise((_resolve, reject) => {
                 /* istanbul ignore next */
                 timer = setTimeout(() => {
                     obs.disconnect()
@@ -150,6 +185,12 @@ export default class LambdaTestLauncher {
         )
     }
 
+    /**
+     * Cleans up resources after test execution completes
+     * Stops the LambdaTest tunnel if it was started
+     * @returns {Promise<void>} Promise that resolves when cleanup is complete
+     * @throws {Error} When tunnel fails to stop within timeout period
+     */
     onComplete() {
         if (
             !this.lambdatestTunnelProcess ||
@@ -186,6 +227,14 @@ export default class LambdaTestLauncher {
 
 }
 
+/**
+ * Checks if an uploaded APK app has been processed and patched by LambdaTest
+ * Polls the API until the app is ready for use
+ * @param {string} appId - The ID of the uploaded app
+ * @param {string} headerEnv - Authorization header for API requests
+ * @returns {Promise<void>} Promise that resolves when app is fully processed
+ * @private
+ */
 async function checkPatchUrl(appId, headerEnv) {
     let config = {
         method: 'get',
