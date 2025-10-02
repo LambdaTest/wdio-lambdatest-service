@@ -30,7 +30,7 @@ export function getParentSuiteName(fullTitle, testSuiteTitle) {
  */
 export async function updateSessionById(sessionId, data, lambdaCredentials){
     const sessionUrl = lambdaCredentials.isApp ? `${baseUrlApp}${appVersion.latestVersion}/sessions/${sessionId}` : `${baseUrl}${version.latestVersion}/sessions/${sessionId}`;
-    let config = {
+    const config = {
         method: 'patch',
         maxBodyLength: Infinity,
         url: sessionUrl,
@@ -42,7 +42,7 @@ export async function updateSessionById(sessionId, data, lambdaCredentials){
         data: data
     };
     try {
-        let response = await axios.request(config);
+        const response = await axios.request(config);
         logger.info(response?.config?.data + response?.data);
     } catch (error) {
         logger.error(error); 

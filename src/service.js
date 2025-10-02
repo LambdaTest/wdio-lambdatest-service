@@ -146,7 +146,7 @@ export default class LambdaRestService {
   }
 
   async beforeStep(step) {
-    if (!this._suiteTitle || this._suiteTitle == 'unknown scenario') {
+    if (!this._suiteTitle || this._suiteTitle === 'unknown scenario') {
       this._suiteTitle =
         step.document?.feature?.name ||
         step.step?.scenario?.name ||
@@ -256,7 +256,7 @@ export default class LambdaRestService {
       }
 
       // Use the failure value for result in case of reloaded sessions
-      if (this._lastReloadedSession==this._browser.sessionId){
+      if (this._lastReloadedSession === this._browser.sessionId){
         return this._update({ sessionId: this._browser.sessionId, failures: failures });
       }
 
@@ -345,7 +345,7 @@ export default class LambdaRestService {
   }
 
   getBody({ fullTitle, status, _failures, calledOnReload = false, browserName }) {
-    let body = {};
+    const body = {};
     if (
       !(
         (!this._browser.isMultiremote && this._capabilities.name) ||

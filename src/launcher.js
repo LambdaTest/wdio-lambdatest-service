@@ -48,15 +48,15 @@ export default class LambdaTestLauncher {
               const appUrl = this.options.app?.app_url ?? null;
               const customId = this.options.app?.custom_id ?? null;
             
-              let data = new FormData();
+              const data = new FormData();
               data.append('name', appName);
             
               data.append(appPath !== null ? 'appFile' : 'url', appPath !== null ? fs.createReadStream(appPath) : appUrl);
             
               if (customId !== null) data.append('custom_id', customId);
             
-              let headerEnv = `Basic ${Buffer.from(config.user + ':' + config.key).toString('base64')}`;
-              let body = {
+              const headerEnv = `Basic ${Buffer.from(config.user + ':' + config.key).toString('base64')}`;
+              const body = {
                 method: 'post',
                 maxBodyLength: Infinity,
                 url: 'https://manual-api.lambdatest.com/app/upload/realDevice',
@@ -187,7 +187,7 @@ export default class LambdaTestLauncher {
 }
 
 async function checkPatchUrl(appId, headerEnv) {
-    let config = {
+    const config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: `https://manual-api.lambdatest.com/app/${appId}/url?reinstall=true`,
