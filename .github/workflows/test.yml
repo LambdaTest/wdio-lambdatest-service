@@ -16,23 +16,20 @@ concurrency:
 jobs:
     linux:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                node-version: [16.x, 18.x]
         env:
             LT_USERNAME: ${{ secrets.LT_USERNAME }}
             LT_ACCESS_KEY: ${{ secrets.LT_ACCESS_KEY }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v2
+            - name: Use Node.js 18.x
+              uses: actions/setup-node@v4
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version: 18.x
 
             - name: Install pnpm
-              uses: pnpm/action-setup@v2
+              uses: pnpm/action-setup@v4
               with:
                   version: 8
 
@@ -40,10 +37,10 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Build
-              run: pnpm run build
+              run: pnpm build
 
             - name: Test
-              run: pnpm run test
+              run: pnpm test
 
     macos:
         runs-on: macos-latest
@@ -52,15 +49,15 @@ jobs:
             LT_ACCESS_KEY: ${{ secrets.LT_ACCESS_KEY }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Use Node.js 18.x
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: 18.x
 
             - name: Install pnpm
-              uses: pnpm/action-setup@v2
+              uses: pnpm/action-setup@v4
               with:
                   version: 8
 
