@@ -31,6 +31,7 @@
     "compile": "babel src/ -d build/ --config-file ./babel.config.js",
     "lint:staged": "git diff-index --cached --name-only --diff-filter=d HEAD | grep -E \".*\\.[cm]?js$\" | xargs -r node_modules/eslint/bin/eslint.js",
     "prepare": "run-s build",
+    "preinstall": "npx only-allow pnpm",
     "postbuild": "cp src/*.d.ts build/",
     "test": "run-s test:*",
     "test:eslint": "eslint --cache src",
@@ -87,6 +88,7 @@
     "husky": "^3.0.7",
     "mime-types": "^2.1.24",
     "npm-run-all": "^4.1.5",
+    "only-allow": "^1.2.1",
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.0",
     "tempy": "^0.3.0",
@@ -95,8 +97,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint:staged",
-      "pre-push": "npm run test:eslint"
+      "pre-commit": "pnpm run lint:staged",
+      "pre-push": "pnpm run test:eslint"
     }
   },
   "greenkeeper": {

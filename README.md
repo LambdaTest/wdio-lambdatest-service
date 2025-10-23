@@ -407,10 +407,10 @@ To get test names as scenario names for cucumber specific tests, simply add `use
 
 ## Steps to compile and publish
 1. git clone this repository.
-2. run "npm install"
-3. run "npm run build"
+2. run "pnpm install"
+3. run "pnpm run build"
 4. Steps to Publish: run "npm login"
-5. run "npm publish --access public"
+5. run "pnpm publish --access public"
 
 ----
 
