@@ -1,20 +1,23 @@
-import FormData from 'form-data';
-import fs from 'fs';
-import axios from 'axios';
+import FormData from "form-data";
+import fs from "fs";
+import axios from "axios";
 
-import { performance, PerformanceObserver } from 'perf_hooks'
-import logger from '@wdio/logger'
-import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
-import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants.js'
-import { updateBuildStatusForSession } from './util.js'
-const log = logger('@wdio/lambdatest-service')
-const colors = require('colors');
+import { performance, PerformanceObserver } from "perf_hooks";
+import logger from "@wdio/logger";
+import LambdaTestTunnelLauncher from "@lambdatest/node-tunnel";
+import {
+  TUNNEL_START_FAILED,
+  TUNNEL_STOP_FAILED,
+  TUNNEL_STOP_TIMEOUT,
+} from "./constants.js";
+import { updateBuildStatusForSession } from "./util.js";
+const log = logger("@wdio/lambdatest-service");
+const colors = require("colors");
 
 /**
  * LambdaTest launcher service for WebdriverIO that handles tunnel management and app uploads
  * @class LambdaTestLauncher
  */
-
 export default class LambdaTestLauncher {
   lambdatestTunnelProcess;
   options;
@@ -108,21 +111,14 @@ export default class LambdaTestLauncher {
           data: data,
         };
 
-    async onComplete(exitCode, config) {
-        try {
-            const updateBuildStatus = this.options?.updateBuildStatusOnRetry === true;
-            if (updateBuildStatus && exitCode === 0 && config?.product === 'appAutomation' && config?.sessionId) {
-                const lambdaCredentials = {
-                    username: config.user,
-                    accessKey: config.key,
-                    isApp: config?.product === 'appAutomation' ? true : false
-                };
-                await updateBuildStatusForSession(config.sessionId, lambdaCredentials, exitCode)
-            }
-        }catch(error){
-            console.error(error.message);
-        }
+        const response = await axios.request(body);
+        console.log(colors.green(JSON.stringify(response.data)));
 
+        const envAppUrl = response.data.app_url;
+        if (this.options.app.enableCapability) {
+          this.configureCapabilities(capabilities, "app", envAppUrl);
+        }
+        const appId = response.data.app_id;
         if (
           (appPath && appPath.includes(".apk")) ||
           (appUrl && appUrl.includes(".apk"))
@@ -180,7 +176,7 @@ export default class LambdaTestLauncher {
           });
         })
       ),
-      new Promise((_resolve, reject) => {
+      new Promise((resolve, reject) => {
         /* istanbul ignore next */
         timer = setTimeout(() => {
           obs.disconnect();
@@ -210,7 +206,30 @@ export default class LambdaTestLauncher {
    * @returns {Promise<void>} Promise that resolves when cleanup is complete
    * @throws {Error} When tunnel fails to stop within timeout period
    */
-  onComplete() {
+  async onComplete(exitCode, config) {
+    try {
+      const updateBuildStatus = this.options?.updateBuildStatusOnRetry === true;
+      if (
+        updateBuildStatus &&
+        exitCode === 0 &&
+        config?.product === "appAutomation" &&
+        config?.sessionId
+      ) {
+        const lambdaCredentials = {
+          username: config.user,
+          accessKey: config.key,
+          isApp: config?.product === "appAutomation" ? true : false,
+        };
+        await updateBuildStatusForSession(
+          config.sessionId,
+          lambdaCredentials,
+          exitCode
+        );
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+
     if (
       !this.lambdatestTunnelProcess ||
       typeof this.lambdatestTunnelProcess.isRunning !== "function" ||
