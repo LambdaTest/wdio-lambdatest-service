@@ -1,6 +1,6 @@
 {
   "name": "wdio-lambdatest-service",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A WebdriverIO service that manages tunnel and job metadata for LambdaTest.",
   "author": "LambdaTest <keys@lambdatest.com>",
   "contributors": [
