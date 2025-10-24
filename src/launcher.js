@@ -44,7 +44,6 @@ export default class LambdaTestLauncher {
    * @param {Object|Array<Object>} capabilities - WebDriver capabilities object or array
    * @param {string} key - The capability key to set
    * @param {any} value - The value to set for the capability key
-   * @private
    */
   configureCapabilities(capabilities, key, value) {
     const updateCapability = (capability) => {
@@ -267,14 +266,6 @@ export default class LambdaTestLauncher {
   }
 }
 
-/**
- * Checks if an uploaded APK app has been processed and patched by LambdaTest
- * Polls the API until the app is ready for use
- * @param {string} appId - The ID of the uploaded app
- * @param {string} headerEnv - Authorization header for API requests
- * @returns {Promise<void>} Promise that resolves when app is fully processed
- * @private
- */
 async function checkPatchUrl(appId, headerEnv) {
   let config = {
     method: "get",
