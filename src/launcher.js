@@ -24,16 +24,18 @@ export default class LambdaTestLauncher {
 
   /**
    * Creates an instance of LambdaTestLauncher
+   * @public
    * @param {Object} options - Configuration options for the launcher
-   * @param {boolean} [options.tunnel] - Whether to start LambdaTest tunnel
-   * @param {boolean} [options.app_upload] - Whether to upload app before test execution
-   * @param {Object} [options.app] - App configuration for upload
-   * @param {string} [options.app.app_name] - Name of the app to upload
-   * @param {string} [options.app.app_path] - Local path to the app file
-   * @param {string} [options.app.app_url] - URL to the app file
+   * @param {boolean} [options.tunnel=false] - Whether to start LambdaTest tunnel for local testing
+   * @param {boolean} [options.app_upload=false] - Whether to upload app before test execution
+   * @param {boolean} [options.updateBuildStatusOnRetry=false] - Whether to update build status on retry for app automation
+   * @param {Object} [options.app] - App configuration for upload (required if app_upload is true)
+   * @param {string} options.app.app_name - Name of the app to upload
+   * @param {string} [options.app.app_path] - Local path to the app file (either app_path or app_url required)
+   * @param {string} [options.app.app_url] - URL to the app file (either app_path or app_url required)
    * @param {string} [options.app.custom_id] - Custom identifier for the app
-   * @param {boolean} [options.app.enableCapability] - Whether to set app URL in capabilities
-   * @param {Object} [options.lambdatestOpts] - Additional LambdaTest tunnel options
+   * @param {boolean} [options.app.enableCapability=false] - Whether to set app URL in capabilities automatically
+   * @param {Object} [options.lambdatestOpts] - Additional LambdaTest tunnel options passed to tunnel launcher
    */
   constructor(options) {
     this.options = options;
@@ -41,6 +43,7 @@ export default class LambdaTestLauncher {
 
   /**
    * Configures WebDriver capabilities with LambdaTest specific options
+   * @public
    * @param {Object|Array<Object>} capabilities - WebDriver capabilities object or array
    * @param {string} key - The capability key to set
    * @param {any} value - The value to set for the capability key
@@ -68,6 +71,7 @@ export default class LambdaTestLauncher {
   /**
    * Prepares the test environment by uploading apps and starting tunnels
    * Called before test execution begins
+   * @public
    * @param {Object} config - WebdriverIO configuration object
    * @param {string} config.user - LambdaTest username
    * @param {string} config.key - LambdaTest access key
@@ -201,7 +205,14 @@ export default class LambdaTestLauncher {
 
   /**
    * Cleans up resources after test execution completes
-   * Stops the LambdaTest tunnel if it was started
+   * Stops the LambdaTest tunnel if it was started and updates build status if configured
+   * @public
+   * @param {number} exitCode - The exit code from the test execution
+   * @param {Object} config - WebdriverIO configuration object
+   * @param {string} [config.user] - LambdaTest username
+   * @param {string} [config.key] - LambdaTest access key
+   * @param {string} [config.product] - Product type (e.g., 'appAutomation')
+   * @param {string} [config.sessionId] - Session ID for build status update
    * @returns {Promise<void>} Promise that resolves when cleanup is complete
    * @throws {Error} When tunnel fails to stop within timeout period
    */
