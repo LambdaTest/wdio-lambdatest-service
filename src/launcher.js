@@ -218,7 +218,7 @@ export default class LambdaTestLauncher {
         const lambdaCredentials = {
           username: config.user,
           accessKey: config.key,
-          isApp: config?.product === "appAutomation" ? true : false,
+          isApp: config?.product === "appAutomation",
         };
         await updateBuildStatusForSession(
           config.sessionId,
