@@ -9,6 +9,11 @@ import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './
 import { updateBuildStatusForSession } from './util.js'
 const log = logger('@wdio/lambdatest-service')
 const colors = require('colors');
+
+/**
+ * LambdaTest launcher service for WebdriverIO that handles tunnel management and app uploads
+ * @class LambdaTestLauncher
+ */
 export default class LambdaTestLauncher {
     lambdatestTunnelProcess
     options
@@ -17,6 +22,13 @@ export default class LambdaTestLauncher {
         this.options = options
     }
 
+    /**
+     * Configures WebDriver capabilities with LambdaTest specific options
+     * @public
+     * @param {Object|Array<Object>} capabilities - WebDriver capabilities object or array
+     * @param {string} key - The capability key to set
+     * @param {any} value - The value to set for the capability key
+     */
     configureCapabilities(capabilities, key, value) {
         const updateCapability = (capability) => {
             if (capability['lt:options']) {
@@ -37,6 +49,16 @@ export default class LambdaTestLauncher {
         }
     }
 
+    /**
+     * Called before test execution begins
+     * @public
+     * @param {Object} config - WebdriverIO configuration object
+     * @param {string} config.user - LambdaTest username
+     * @param {string} config.key - LambdaTest access key
+     * @param {Object|Array<Object>} capabilities - WebDriver capabilities
+     * @returns {Promise<void>} Promise that resolves when preparation is complete
+     * @throws {Error} When app upload fails or tunnel startup fails
+     */
     // modify config and launch tunnel
     async onPrepare(config, capabilities) {
 
@@ -151,6 +173,18 @@ export default class LambdaTestLauncher {
         )
     }
 
+    /**
+     * Cleans up resources after test execution completes
+     * @public
+     * @param {number} exitCode - The exit code from the test execution
+     * @param {Object} config - WebdriverIO configuration object
+     * @param {string} [config.user] - LambdaTest username
+     * @param {string} [config.key] - LambdaTest access key
+     * @param {string} [config.product] - Product type (e.g., 'appAutomation')
+     * @param {string} [config.sessionId] - Session ID for build status update
+     * @returns {Promise<void>} Promise that resolves when cleanup is complete
+     * @throws {Error} When tunnel fails to stop within timeout period
+     */
     async onComplete(exitCode, config) {
         try {
             const updateBuildStatus = this.options?.updateBuildStatusOnRetry === true;
