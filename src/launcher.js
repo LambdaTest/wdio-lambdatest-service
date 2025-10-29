@@ -175,7 +175,6 @@ export default class LambdaTestLauncher {
 
     /**
      * Cleans up resources after test execution completes
-     * Stops the LambdaTest tunnel if it was started and updates build status if configured
      * @public
      * @param {number} exitCode - The exit code from the test execution
      * @param {Object} config - WebdriverIO configuration object
