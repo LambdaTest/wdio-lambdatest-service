@@ -1,22 +1,52 @@
-WebdriverIO LambdaTest Service
-========================
+# wdio-lambdatest-service for TestMu AI (Formerly LambdaTest)
 
-[![WDIO health check](https://github.com/LambdaTest/wdio-lambdatest-service/actions/workflows/healthcheck.yml/badge.svg?branch=master)](https://github.com/LambdaTest/wdio-lambdatest-service/actions/workflows/healthcheck.yml)
+<p align="center">
+  <a href="https://www.testmuai.com/"><img src="https://img.shields.io/badge/MADE%20BY%20TestMu%20AI-000000.svg?style=for-the-badge&labelColor=000" alt="Made by TestMu AI"></a>
+  <a href="https://www.npmjs.com/package/wdio-lambdatest-service"><img src="https://img.shields.io/npm/v/wdio-lambdatest-service.svg?style=for-the-badge&labelColor=000000" alt="wdio-lambdatest-service version"></a>
+  <a href="https://community.testmuai.com/"><img src="https://img.shields.io/badge/Join%20the%20community-blueviolet.svg?style=for-the-badge&labelColor=000000" alt="Community"></a>
+</p>
 
-> A WebdriverIO service that manages tunnel and job metadata for LambdaTest users.
+## Getting Started
 
-## Installation
+[TestMu AI](https://www.testmuai.com/) (Formerly LambdaTest) is the world's first full-stack AI Agentic Quality Engineering platform that empowers teams to test intelligently, smarter, and ship faster. Built for scale, it offers a full-stack testing cloud with 10K+ real devices and 3,000+ browsers. With AI-native test management, MCP servers, and agent-based automation, TestMu AI supports Selenium, Appium, Playwright, and all major frameworks. 
+
+With TestMu AI (Formerly LambdaTest), you can use this WebdriverIO service to seamlessly manage tunnel connections and job metadata for your WDIO test runs on the TestMu AI cloud.
+
+- [Sign up on TestMu AI](https://www.testmuai.com/register/) (Formerly LambdaTest).
+- Follow the [TestMu AI Documentation](https://www.testmuai.com/support/docs/) for the full setup walkthrough.
+
+### Prerequisites
+
+- Node.js and npm (latest stable)
+- WebdriverIO installed in your project
+- A TestMu AI (Formerly LambdaTest) account with your username and access key
+
+### Setup
+
+Clone and install dependencies:
 
 ```bash
-npm i wdio-lambdatest-service --save-dev
+git clone https://github.com/LambdaTest/wdio-lambdatest-service && cd wdio-lambdatest-service
+npm install wdio-lambdatest-service --save-dev
 ```
 
-Instructions on how to install `WebdriverIO` can be found [here.](https://webdriver.io/docs/gettingstarted.html)
+Set your credentials as environment variables.
 
+**macOS / Linux:**
 
-## Configuration
+```bash
+export LT_USERNAME="YOUR_USERNAME"
+export LT_ACCESS_KEY="YOUR_ACCESS_KEY"
+```
 
-WebdriverIO has LambdaTest support out of the box. You should simply set `user` and `key` in your `wdio.conf.js` file. To enable the feature for app automation, set `product: 'appAutomation'` in your `wdio.conf.js` file. This service plugin provides supports for [LambdaTest Tunnel](https://www.lambdatest.com/support/docs/troubleshooting-lambda-tunnel/). Set `tunnel: true` also to activate this feature.
+**Windows:**
+
+```bash
+set LT_USERNAME="YOUR_USERNAME"
+set LT_ACCESS_KEY="YOUR_ACCESS_KEY"
+```
+
+Configure the service in your `wdio.conf.js`:
 
 ```js
 // wdio.conf.js
@@ -24,8 +54,6 @@ exports.config = {
     // ...
     user: process.env.LT_USERNAME,
     key: process.env.LT_ACCESS_KEY,
-    logFile : './logDir/api.log',
-    product : 'appAutomation',
     services: [
         ['lambdatest', {
             tunnel: true
@@ -35,383 +63,69 @@ exports.config = {
 };
 ```
 
-### To get test error remarks on automation dashboard
-To get test error remarks on automation dashboard, simply add `ltErrorRemark: true` in your `wdio.conf.js`.
+### Run tests
 
+Run your WebdriverIO test suite as usual:
 
-### To upload app from local or url
-Upload `android` or `ios` apps from local or hosted app url by adding this required configuration in your `wdio.conf.js`. To use the uploaded app for testing along in the same run set `enableCapability = true` , this will set the app url value in the capabilities.
+```bash
+npx wdio run wdio.conf.js
+```
+
+View results on your TestMu AI dashboard.
+
+### Local testing with TestMu AI Tunnel
+
+To test locally hosted apps, set up the TestMu AI tunnel. OS-specific guides:
+
+- [Local Testing on Windows](https://www.testmuai.com/support/docs/local-testing-for-windows/)
+- [Local Testing on macOS](https://www.testmuai.com/support/docs/local-testing-for-macos/)
+- [Local Testing on Linux](https://www.testmuai.com/support/docs/local-testing-for-linux/)
+
+Add the following to your capabilities:
 
 ```js
-// wdio.conf.js
-services: [
-    [
-        "lambdatest",
-        {
-        tunnel: true,
-        app_upload: true, 
-        app:{
-            app_name : "xyz", //provide your desired app name
-            app_path : "/path/to/your/app/file", //provide the local app location
-            // or
-            app_url : "https://example.test_android.apk", //provide the url where your app is horsted or stored
-            custom_id : "12345", //provide your desired custom id
-            enableCapability : true
-        }
-    }
-    ]
-]
+tunnel: true,
 ```
 
-## Options
+## Contributions
 
-In order to authorize to the LambdaTest service your config needs to contain a [`user`](https://webdriver.io/docs/options.html#user) and [`key`](https://webdriver.io/docs/options.html#key) option.
+Contributions are welcome. Open an issue to discuss your idea before submitting a pull request. When reporting bugs, include your Node.js version, OS, and npm version.
 
-### tunnel
-Set this to true to enable routing connections from LambdaTest cloud through your computer. You will also need to set `tunnel` to true in browser capabilities.
+## TestMu AI (Formerly LambdaTest) Community
 
-Type: `Boolean`<br>
-Default: `false`
+Connect with testers and developers in the [TestMu AI Community](https://community.testmuai.com/). Ask questions, share what you are building, and discuss best practices in test automation and DevOps.
+  
+## TestMu AI (Formerly LambdaTest) Certifications
 
-### lambdatestOpts
-Specified optional will be passed down to LambdaTest Tunnel.
+Earn free [TestMu AI Certifications](https://www.testmuai.com/certifications/) for testers, developers, and QA engineers. Validate your skills in Selenium, Cypress, Playwright, Appium, Espresso and more. Industry-recognized, shareable on LinkedIn, and built by practitioners, not marketers.
 
-Type: `Object`<br>
-Default: `{}`
+## Learning Resources by TestMu AI (Formerly LambdaTest)
 
-Given below is an comprehensive list of all options available:
+Learn modern testing through tutorials, guides, videos, and weekly updates:
 
-#### tunnelName
-Specifies the custom LambdaTest Tunnel name to be used.
+* [TestMu AI Blog](https://www.testmuai.com/blog/)
+* [TestMu AI Learning Hub](https://www.testmuai.com/learning-hub/)
+* [TestMu AI on YouTube](https://www.youtube.com/@TestMuAI)
+* [TestMu AI Newsletter](https://www.testmuai.com/newsletter/)
+  
+## LambdaTest is Now TestMu AI
 
-**Example:**
-```json
-{"tunnelName": "my_custom_tunnel"}
-```
+On **January 12, 2026**, [LambdaTest evolved to TestMu AI](https://www.testmuai.com/lambdatest-is-now-testmuai/), the world's first fully autonomous **Agentic AI Quality Engineering Platform**.
 
-#### port
-Port for LambdaTest Tunnel to activate.
+Same team. Same infrastructure. Same customer accounts. All existing LambdaTest logins, scripts, capabilities, and integrations continue to work without change.
 
-**Example:**
-```json
-{"port": 33000}
-```
-#### user
-LambdaTest username.
+Find the new home for [LambdaTest](https://www.testmuai.com).
 
-**Example:**
-```json
-{"user": "your_username"}
-```
+### How LambdaTest Evolved into TestMu AI
 
-#### key
-LambdaTest accessKey.
+In 2017, we launched LambdaTest with a simple mission: make testing fast, reliable, and accessible. As LambdaTest grew, we expanded into Test Intelligence, Visual Regression Testing, Accessibility Testing, API Testing, and Performance Testing, covering the full depth of the testing lifecycle.
 
-**Example:**
-```json
-{"key": "your_access_key"}
-```
+As software development entered the AI era, testing had to evolve, too. We rebuilt the architecture to be AI-native from the ground up, with autonomous agents that **plan, author, execute, analyze, and optimize tests** while keeping humans in the loop. The platform integrates with your repos, CI, IDEs, and terminals, continuously learning from every code change and development signal.
 
-#### verbose
-Should every proxy request be logged to stdout.
+That evolution earned a new name: **TestMu AI**, built for an AI-first future of quality engineering. TestMu is not a new name for us. It is the name of our annual community conference, which has brought together 100,000+ quality engineers to discuss how AI would reshape testing, long before that became an industry norm. 
 
-**Example:**
-```json
-{"verbose": true}
-```
+What started as a high-performance cloud testing platform has transformed into an AI-native, multi-agent system powering a connected, end-to-end quality layer. That evolution defined a new identity: LambdaTest evolved into TestMu AI, built for an AI-first future of quality engineering.
 
-#### logFile
-Location of the LambdaTest Tunnel log file.
+## Support
 
-**Example:**
-```json
-{"logFile": "/path/to/log/file"}
-```
-
-#### config
-
-Path of the config file to use.
-**Example:**
-```json
-{"config": "/path/to/config/file"}
-```
-
-#### dir
-Specify the local directory that will be served by a file server on Tunnel port.
-
-**Example:**
-```json
-{"dir": "/path/to/local/directory"}
-```
-
-
-#### proxyHost
-Specifies the Tunnel proxy port hostname.
-
-**Example:**
-```json
-{"proxyHost": "proxy.example.com"}
-```
-#### proxyUser
-Specifies the Tunnel proxy port username.
-
-**Example:**
-```json
-{"proxyUser": "your_proxy_username"}
-```
-
-#### proxyPass
-Specifies the Tunnel proxy port password.
-
-**Example:**
-```json
-{"proxyPass": "your_proxy_password"}
-```
-
-#### proxyPort
-Specifies the port number where Tunnel proxy will activate.
-
-**Example:**
-```json
-{"proxyPort": 8080}
-```
-
-#### egressOnly
-Uses proxy settings only for outbound requests.
-
-**Example:**
-```json
-{"egressOnly": true}
-```
-
-
-#### ingressOnly
-Routes only incoming traffic via the proxy specified.
-
-**Example:**
-```json
-{"ingressOnly": true}
-```
-
-
-#### pacfile
-To use PAC (Proxy Auto-Configuration) in local testing, provide
-path of a PAC file.
-
-**Example:**
-```json
-{"pacfile": "/path/to/pacfile"}
-```
-
-#### loadBalanced
-Activates [Load Balancing](https://www.lambdatest.com/support/docs/load-balancing-in-lambda-tunnel/) for LambdaTest Tunnel.
-
-**Example:**
-```json
-{"loadBalanced": true}
-```
-
-#### mode
-Specifies in which mode tunnel should run "ssh" or "ws". (default "ssh").
-
-**Example:**
-```json
-{"mode": "ssh"}
-```
-
-#### sshConnType
-Specify type of ssh connection (over_22, over_443, over_ws). To use –sshConnType, specify ––mode ssh flag first.
-
-**Example:**
-```json
-{"sshConnType": "over_22"}
-```
-
-#### maxSSHConnections
-Increase the SSH connection from Tunnel Client to Tunnel Server. Maximum allowed value is 30.
-
-**Example:**
-```json
-{"maxSSHConnections": 2}
-```
-
-#### sharedTunnel
-Sharing Tunnel among team members.
-
-**Example:**
-```json
-{"sharedTunnel": true}
-```
-
-#### env
-The environment on which the LambdaTest Tunnel will run.
-
-**Example:**
-```json
-{"env": "production"}
-```
-
-
-#### infoAPIPort
-Exposes [Tunnel Info API](https://www.lambdatest.com/support/docs/advanced-tunnel-features/#tunnelinfoapis) at the specified port.
-
-**Example:**
-```json
-{"infoAPIPort": 8080}
-```
-
-#### callbackURL
-Callback URL for tunnel status.
-
-**Example:**
-```json
-{"callbackURL": "https://example.com/callback"}
-```
-
-
-#### allowHosts
-Comma separated list of hosts to route via tunnel. Everything else will be routed via Internet.
-
-**Example:**
-```json
-{"allowHosts": "example.com,anotherexample.com"}
-```
-
-#### bypassHosts
-Comma separated list of hosts to bypass from tunnel. These will be routed via internet.
-
-**Example:**
-```json
-{"bypassHosts": "example.com,anotherexample.com"}
-```
-
-
-
-#### clientCert
-mTLS Client Certificate filepath.
-
-**Example:**
-```json
-{"clientCert": "/path/to/client_certificate"}
-```
-
-#### clientKey
-mTLS Client Key filepath.
-
-**Example:**
-```json
-{"clientKey": "/path/to/client_key"}
-```
-
-#### mTLSHosts
-Comma separated list of mTLS hosts.
-
-**Example:**
-```json
-{"mTLSHosts": "example.com,anotherexample.com"}
-```
-
-
-#### dns
-Comma separated list of DNS Servers.
-
-**Example:**
-```json
-{"dns": "8.8.8.8,8.8.4.4"}
-```
-
-
-#### mitm
-Enable the [MITM (Man-in-the-middle)](https://www.lambdatest.com/support/docs/advanced-tunnel-features/#mitmlocaltesting) mode for LambdaTest Tunnel.
-
-**Example:**
-```json
-{"mitm": true}
-```
-
-#### ntlm
-To use Microsoft NTLM (Windows NT LAN Manager) authentication for communication or transport purposes.
-
-**Example:**
-```json
-{"ntlm": true}
-```
-
-#### pidfile
-Path of pidfile, where process Id will be written.
-
-**Example:**
-```json
-{"pidfile": "/path/to/pidfile"}
-```
-
-
-#### usePrivateIp
-Sets remote address to an internal IP of client machine.
-
-**Example:**
-```json
-{"usePrivateIp": true}
-```
-
-You can find more about these options [here](https://www.lambdatest.com/support/docs/lambda-tunnel-modifiers/).
-
-### preferScenarioName
-Cucumber only. Set the session name to the Scenario name if only a single Scenario ran.
-Useful when running in parallel with [wdio-cucumber-parallel-execution](https://github.com/SimitTomar/wdio-cucumber-parallel-execution).
-
-Type: `Boolean`<br />
-Default: `false`
-
-### sessionNameFormat
-Customize the session name format.
-
-Type: `Function`<br />
-Default (Cucumber/Jasmine): `(config, capabilities, suiteTitle) => suiteTitle`<br />
-Default (Mocha): `(config, capabilities, suiteTitle, testTitle) => suiteTitle + ' - ' + testTitle`
-
-### sessionNameOmitTestTitle
-Mocha only. Do not append the test title to the session name.
-
-Type: `Boolean`<br />
-Default: `false`
-
-### sessionNamePrependTopLevelSuiteTitle
-Mocha only. Prepend the top level suite title to the session name.
-
-Type: `Boolean`<br />
-Default: `false`
-
-### setSessionName
-Automatically set the session name.
-
-Type: `Boolean`<br />
-Default: `true`
-
-### setSessionStatus
-Automatically set the session status (passed/failed).
-
-Type: `Boolean`<br />
-Default: `true`
-
-
-### ignoreTestCountInName
-Ignore the count of retries of a test in the name
-
-Type: `Boolean`<br />
-Default: `false`
-
-
-### useScenarioName
-To get test names as scenario names for cucumber specific tests, simply add `useScenarioName: true` in your `wdio.conf.js`.
-
-## Steps to compile and publish
-1. git clone this repository.
-2. run "npm install"
-3. run "npm run build"
-4. Steps to Publish: run "npm login"
-5. run "npm publish --access public"
-
-----
-
-For more information on WebdriverIO see the [homepage](https://webdriver.io).
+Got a question? Email [support@testmuai.com](mailto:support@testmuai.com) or chat with us 24x7 from our chat portal.
