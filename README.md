@@ -13,7 +13,7 @@
 With TestMu AI (Formerly LambdaTest), you can use this WebdriverIO service to seamlessly manage tunnel connections and job metadata for your WDIO test runs on the TestMu AI cloud.
 
 - [Sign up on TestMu AI](https://www.testmuai.com/register/) (Formerly LambdaTest).
-- Follow the [TestMu AI Documentation](https://www.testmuai.com/support/docs/) for the full setup walkthrough.
+- Follow the [WebdriverIO on TestMu AI setup guide](https://www.testmuai.com/support/docs/webdriverio-with-selenium-running-webdriverio-automation-scripts-on-testmu-selenium-grid/?utm_source=github&utm_medium=referral) for the full setup walkthrough.
 
 ### Prerequisites
 
