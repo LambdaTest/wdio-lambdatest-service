@@ -91,6 +91,12 @@ tunnel: true,
 
 Contributions are welcome. Open an issue to discuss your idea before submitting a pull request. When reporting bugs, include your Node.js version, OS, and npm version.
 
+## More from TestMu AI
+
+- **[Kane CLI](https://github.com/LambdaTest/kane-cli)**: open-source AI test agent CLI. Describe a test in plain English and it generates and runs it on desktop web, Android and iOS.
+- **[KaneAI](https://www.testmuai.com/kane-ai/)**: GenAI-native test agent to plan, author and evolve end-to-end tests in natural language.
+- **[SmartUI](https://www.testmuai.com/support/docs/smartui-wdio-sdk/)**: visual regression testing for your WebdriverIO runs (pixel, layout and DOM diffs).
+
 ## TestMu AI (Formerly LambdaTest) Community
 
 Connect with testers and developers in the [TestMu AI Community](https://community.testmuai.com/). Ask questions, share what you are building, and discuss best practices in test automation and DevOps.
