@@ -193,6 +193,102 @@ test('after in multiremote', () => {
              })
 })
 
+describe('_isMultiremote', () => {
+    it.each([
+        [{ isMultiremote: true }, true],
+        [{ isMultiremote: false }, false],
+        [{ isMultiRemote: true }, true],
+        [{ isMultiRemote: false }, false],
+        [{}, false],
+    ])('returns correct value for browser %o', (browserProps, expected) => {
+        const service = new LambdaTestService({}, [] as any, {} as any)
+        service['_browser'] = browserProps as any
+        expect(service['_isMultiremote']()).toBe(expected)
+    })
+})
+
+/**
+ * A WebdriverIO v10 multiremote browser: `isMultiRemote`, and the instances are only
+ * available through `getInstance()`, not as properties of the browser
+ */
+function getV10MultiRemoteBrowser () {
+    const instances: Record<string, { sessionId: string, executeScript: ReturnType<typeof vi.fn> }> = {
+        chromeA: { sessionId: 'sessionChromeA', executeScript: vi.fn() },
+        chromeB: { sessionId: 'sessionChromeB', executeScript: vi.fn() },
+        chromeC: { sessionId: 'sessionChromeC', executeScript: vi.fn() },
+    }
+    return {
+        config: {},
+        executeScript: vi.fn(),
+        isMultiRemote: true,
+        instances: Object.keys(instances),
+        getInstance: (browserName: string) => instances[browserName],
+    } as any
+}
+
+test('after in multiremote with WebdriverIO v10 isMultiRemote', () => {
+    const service = new LambdaTestService({}, [] as any, {} as any)
+    service['_browser'] = getV10MultiRemoteBrowser()
+    service.beforeSession(
+        { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any,
+        { chromeA: {}, chromeB: {}, chromeC: {} } as any
+    )
+    service['_failures'] = 5
+    const updateSpy = vi.spyOn(service, '_update')
+
+    service.after(5)
+
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeA',
+            'failures': 5,
+            'calledOnReload': false,
+            'sessionId': 'sessionChromeA',
+            })
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeC',
+            'failures': 5,
+            'calledOnReload': false,
+            'sessionId': 'sessionChromeC',
+            })
+})
+
+test('onReload in multiremote with WebdriverIO v10 isMultiRemote', () => {
+    const service = new LambdaTestService({}, [] as any, {} as any)
+    service['_browser'] = getV10MultiRemoteBrowser()
+    service.beforeSession(
+        { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any,
+        { chromeA: {}, chromeB: {}, chromeC: {} } as any
+    )
+    service['_failures'] = 5
+    const updateSpy = vi.spyOn(service, '_update')
+
+    service['_browser'].getInstance('chromeB').sessionId = 'newSessionChromeB'
+    service.onReload('sessionChromeB', 'newSessionChromeB')
+
+    expect(updateSpy).toBeCalledWith({
+            'browserName': 'chromeB',
+            'calledOnReload': true,
+            'failures': 5,
+            'sessionId': 'sessionChromeB',
+            })
+})
+
+test('_executeCommand in multiremote with WebdriverIO v10 isMultiRemote', async () => {
+    const service = new LambdaTestService({}, [] as any, {} as any)
+    service['_browser'] = getV10MultiRemoteBrowser()
+    service.beforeSession(
+        { user: process.env.LT_USERNAME, key: process.env.LT_ACCESS_KEY } as any,
+        { chromeA: {}, chromeB: {}, chromeC: {} } as any
+    )
+
+    await service['_executeCommand']('lambda-status=passed')
+
+    for (const browserName of ['chromeA', 'chromeB', 'chromeC']) {
+        expect(service['_browser'].getInstance(browserName).executeScript).toBeCalledWith('lambda-status=passed', [])
+    }
+    expect(service['_browser'].executeScript).not.toBeCalled()
+})
+
 test('onReload', () => {
     const service = new LambdaTestService({}, [] as any, {} as any)
     service['_browser'] = browser

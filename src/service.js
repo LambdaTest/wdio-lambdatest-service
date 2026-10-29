@@ -352,7 +352,7 @@ export default class LambdaRestService {
 
     const status = "status: " + (result > 0 ? "failed" : "passed");
 
-    if (!this._browser.isMultiremote) {
+    if (!this._isMultiremote()) {
       log.info(
         `Update job with sessionId ${this._browser.sessionId}, ${status}`
       );
@@ -383,20 +383,20 @@ export default class LambdaRestService {
     return Promise.all(
       Object.keys(this._capabilities).map((browserName) => {
         log.info(
-          `Update multiremote job for browser '${browserName}' and sessionId ${this._browser[browserName].sessionId}, ${status}`
+          `Update multiremote job for browser '${browserName}' and sessionId ${this._getInstance(browserName).sessionId}, ${status}`
         );
 
         // Print session URL for each remote browser
         if (process.env.LOG_SESSION_URL === "true") {
           const sessionURL = this.getSessionURL(
-            this._browser[browserName].sessionId,
+            this._getInstance(browserName).sessionId,
             this._config.product
           );
           log.info(`Session URL for ${browserName}: ${sessionURL}`);
         }
 
         return this._update({
-          sessionId: this._browser[browserName].sessionId,
+          sessionId: this._getInstance(browserName).sessionId,
           failures: failures,
           calledOnReload: false,
           browserName: browserName,
@@ -421,7 +421,7 @@ export default class LambdaRestService {
     const status =
       this._failures > 0 || this._retryFailures > 0 ? "failed" : "passed";
 
-    if (!this._browser.isMultiremote) {
+    if (!this._isMultiremote()) {
       log.info(
         `Update (reloaded) job with sessionId ${oldSessionId}, ${status}`
       );
@@ -443,7 +443,7 @@ export default class LambdaRestService {
       });
     } else {
       const browserName = this._browser.instances.filter(
-        (browserName) => this._browser[browserName].sessionId === newSessionId
+        (browserName) => this._getInstance(browserName).sessionId === newSessionId
       )[0];
       log.info(
         `Update (reloaded) multiremote job for browser '${browserName}' and sessionId ${oldSessionId}, ${status}`
@@ -452,7 +452,7 @@ export default class LambdaRestService {
       // Print session URL for each remote browser
       if (process.env.LOG_SESSION_URL === "true") {
         const sessionURL = this.getSessionURL(
-          this._browser[browserName].sessionId,
+          this._getInstance(browserName).sessionId,
           this._config.product
         );
         log.info(`Session URL for ${browserName}: ${sessionURL}`);
@@ -557,8 +557,8 @@ export default class LambdaRestService {
     let body = {};
     if (
       !(
-        (!this._browser.isMultiremote && this._capabilities.name) ||
-        (this._browser.isMultiremote &&
+        (!this._isMultiremote() && this._capabilities.name) ||
+        (this._isMultiremote() &&
           this._capabilities[browserName].capabilities.name)
       )
     ) {
@@ -581,7 +581,7 @@ export default class LambdaRestService {
       if (calledOnReload || this._testCnt) {
         let testCnt = ++this._testCnt;
 
-        if (this._browser.isMultiremote) {
+        if (this._isMultiremote()) {
           testCnt = Math.ceil(testCnt / this._browser.instances.length);
         }
         if (!calledOnReload && !this._options.ignoreTestCountInName) {
@@ -657,14 +657,38 @@ export default class LambdaRestService {
     await this._executeCommand(`lambda-name=${sessionName}`);
   }
 
+  /**
+   * Checks if the browser is a multiremote instance
+   * WebdriverIO v10 renamed `isMultiremote` to `isMultiRemote`
+   * @returns {boolean} True if the browser is a multiremote instance
+   */
+  _isMultiremote() {
+    return Boolean(
+      this._browser?.isMultiremote || this._browser?.isMultiRemote
+    );
+  }
+
+  /**
+   * Gets one instance of a multiremote browser
+   * WebdriverIO v10 no longer stores the instances as properties of the multiremote browser,
+   * `getInstance()` exists in v9 and v10, the property is kept for older versions
+   * @param {string} browserName - Name of the instance in the capabilities
+   * @returns {object} The browser of this instance
+   */
+  _getInstance(browserName) {
+    return typeof this._browser.getInstance === "function"
+      ? this._browser.getInstance(browserName)
+      : this._browser[browserName];
+  }
+
   async _executeCommand(cmd) {
     if (!this._browser) {
       return;
     }
-    if (this._browser.isMultiremote) {
+    if (this._isMultiremote()) {
       return Promise.all(
         Object.keys(this._capabilities).map(async (browserName) => {
-          const browser = this._browser[browserName];
+          const browser = this._getInstance(browserName);
           return await browser.executeScript(cmd.toString(), []);
         })
       );
